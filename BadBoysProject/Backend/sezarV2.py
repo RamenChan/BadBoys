@@ -1,9 +1,19 @@
-import math, hashlib, os, binascii
+import math, hashlib, os
 from Crypto.Cipher import DES3
-from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad, unpad
+from dotenv import load_dotenv
+
 
 alfabe_kucuk = "ğüıjçzköybşrhdalvmtnepsuocfgi̇"
 alfabe_buyuk = "ŞZÜKÇYIRĞJHİTVDMÖEALONBPGSUFC"
+
+dotenv_path = r"C:\Users\Mehme\Masaüstü\Projects\BadBoysProject\Backend\.env"
+load_dotenv(dotenv_path)
+
+MASTER_3DES_KEY = os.getenv("MASTER_3DES_KEY")
+MASTER_3DES_KEY = bytes.fromhex(MASTER_3DES_KEY)
+
+
 
 def sezar_algorithm(text, type, time = 2 ):
     cipher_text = ""
@@ -48,27 +58,20 @@ def sezar_algorithm(text, type, time = 2 ):
 def tri(i):
     return round((math.sin(i) + 1) * 15)
 
-def padding(text):
-    padding_lenght = 8 - len(text) % 8
-    return text + bytes([padding_lenght] * padding_lenght)
+def des3_algorithm(text):
+    cipher = DES3.new(MASTER_3DES_KEY, DES3.MODE_ECB)
+    return cipher.encrypt(pad(text.encode(), DES3.block_size))
 
-def des3_algorithm(text, key):
-    cipher = DES3.new(key, DES3.MODE_ECB)
-    return cipher.encrypt(padding(text.encode()))
+def des3_algorithm_decrypt(text):
+    cipher = DES3.new(MASTER_3DES_KEY, DES3.MODE_ECB)
+    return unpad(cipher, DES3.block_size).decode()
 
-def unpadding(text):
-    padding_lenght = text[-1]
-    return text[:-padding_lenght]
 
-def des3_algorithm_decrypt(text, key):
-    cipher = DES3.new(key, DES3.MODE_ECB)
-    return unpadding(cipher.decrypt(text)).decode()
-
-def to_hash(text, key = DES3.adjust_key_parity(os.urandom(24)) , salt= None , iterations: int = 100_000):
+def to_hash(text, salt= None , iterations: int = 100_000):
     
     cipher_text = sezar_algorithm(text, 'encrypt')
 
-    cipher_text = des3_algorithm(cipher_text, key)
+    cipher_text = des3_algorithm(cipher_text)
 
     if salt is None:
         salt = os.urandom(16)
@@ -76,39 +79,6 @@ def to_hash(text, key = DES3.adjust_key_parity(os.urandom(24)) , salt= None , it
     cipher_text = hashlib.pbkdf2_hmac('sha256', cipher_text, salt, iterations)    
 
     return cipher_text.hex(), salt.hex()
-
- 
-
-
-"""
-
-salt, cipher_text = to_hash('deneme')
-
-print(salt.hex() +' '+ cipher_text.hex())
-print(sezar_algorithm('deneme','encrypt'))
-print(sezar_algorithm('reoind','decrypt'))
-
-
-print(des3_algorithm('deneme', des3_key).hex())
-deger = des3_algorithm('deneme', des3_key)
-decryptted = des3_algorithm_decrypt(deger, des3_key)
-print(decryptted)
-
-
-
-salt, cipher_text = to_hash('deneme', des3_key)
-
-girdi = input("Şifreyi giriniz: ")
-
-salt2, user_cipher = to_hash(girdi, des3_key, salt=salt)
-
-if user_cipher == cipher_text:
-    print("Şifre aynı")
-else:
-    print("Şifre farklı")
-"""
-
-
 
 
 

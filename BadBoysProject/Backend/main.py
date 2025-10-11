@@ -8,7 +8,7 @@ CORS(app)
 @app.route("/encrypt", methods=["POST"])
 def encrypt():
     data = request.get_json()
-    value = data.get("value")
+    value = data.get("password")
 
     cipher_text, salt= to_hash(value)
     return jsonify({"cipher_text": cipher_text, "salt": salt})
