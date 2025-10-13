@@ -3,30 +3,92 @@ import Swal from 'sweetalert2';
 import { useState } from "react";
 
 function App() {
+  const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const sendToBackend = async () => {
+  const user_check = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/encrypt", {
+      const res = await fetch("http://127.0.0.1:8000/user_check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
+
       const data = await res.json();
+      const result = data.result;
 
-
+      if (result.code === 1) {
+        Swal.fire({
+          title: 'Başarılı',
+          html: `<p>${response.message}</p>`,
+          icon: 'success',
+          confirmButtonText: 'Tamam'
+        });
+      }
+      else if (result.code === 0) {
+        Swal.fire({
+          title: 'Bilgilendirme',
+          html: `<p>${result.message}</p>`,
+          icon: 'info',
+          confirmButtonText: 'Tamam'
+        });
+      }
+      else {
+        Swal.fire({
+          title: 'Hata',
+          html: `<p>Kullanıcı adı veya şifre yanlış!</p>`,
+          icon: 'error',
+          confirmButtonText: 'Tamam'
+        });
+      }
+    } catch (error) {
       Swal.fire({
-        title: 'Şifreleme Başarılı',
-        html: `
-        <p><strong>Cipher Text:</strong> ${data.cipher_text}</p>
-        <p><strong>Salt:</strong> ${data.salt}</p>
-      `,
-        icon: 'success',
+        title: 'Hata',
+        text: 'Backend ile iletişim kurulamadı!',
+        icon: 'error',
         confirmButtonText: 'Tamam'
       });
+    }
+  };
+
+
+  const user_add = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/user_add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, confirmPassword, email }),
+      });
+
+      const data = await res.json();
+      const result = data.result;
+
+      if (result.code === 1) {
+        Swal.fire({
+          title: 'Başarılı',
+          html: `<p>${result.message}</p>`,
+          icon: 'success',
+          confirmButtonText: 'Tamam'
+        });
+      } else if (result.code === 0) {
+        Swal.fire({
+          title: 'Bilgilendirme',
+          html: `<p>${result.message}</p>`,
+          icon: 'info',
+          confirmButtonText: 'Tamam'
+        });
+      } else {
+        Swal.fire({
+          title: 'Hata',
+          html: `<p>${result.message}</p>`,
+          icon: 'error',
+          confirmButtonText: 'Tamam'
+        });
+      }
     } catch (error) {
-      console.error("Hata:", error);
       Swal.fire({
         title: 'Hata',
         text: 'Backend ile iletişim kurulamadı!',
@@ -39,35 +101,84 @@ function App() {
 
   return (
     <div className="app">
-      <section className="overlay card">
-        <h1 className="card__title">Giriş Yap</h1>
-        <form id="login" className="card__form">
-          <div className="row">
-            <input
-              type="text"
-              name="user"
-              id="user"
-              placeholder="Kullanıcı Adı"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-            <label htmlFor="user">Kullanıcı Adı</label>
-          </div>
-          <div className="row">
-            <input
-              type="password"
-              name="password"
-              id="password"
-              placeholder="Şifre"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <label htmlFor="password">Şifre</label>
-          </div>
-          <button className="btn" type="button" onClick={sendToBackend}>
-            Gönder
-          </button>
-        </form>
+      <section className="overlay">
+        <div className={`slide-container ${isLogin ? "show-login" : "show-register"}`}>
+
+          {/* LOGIN FORM */}
+          <form className="form form-login">
+            <h1 className="card__title">BadBoys</h1>
+            <div className="row">
+              <input type="text"
+                name="user"
+                id="user"
+                placeholder="Kullanıcı Adı"
+                value={username} onChange={(e) => setUsername(e.target.value)} />
+              <label>Kullanıcı Adı</label>
+            </div>
+            <div className="row">
+              <input type="password"
+                name="password"
+                id="password"
+                placeholder="Şifre"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} />
+              <label>Şifre</label>
+            </div>
+            <button className="btn" type="button" onClick={user_check}> Gönder </button>
+            <div className="container">
+              <div className="item1" onClick={() => setIsLogin(false)}>
+                Hesabın yok mu? Kayıt Ol
+              </div>
+              <div className="item2">Şifremi Unuttum</div>
+            </div>
+          </form>
+
+          {/* REGISTER FORM */}
+          <form className="form form-register">
+            <h1 className="card__title">Kayıt Ol</h1>
+            <div className="row">
+              <input type="text"
+                name="user"
+                id="user"
+                placeholder="Kullanıcı Adı"
+                value={username} onChange={(e) => setUsername(e.target.value)} />
+              <label>Kullanıcı Adı</label>
+            </div>
+            <div className="row">
+              <input type="text"
+                name="user"
+                id="user"
+                placeholder="E-Mail"
+                value={email} onChange={(e) => setUsername(e.target.value)} />
+              <label>E-Mail</label>
+            </div>
+            <div className="row">
+              <input type="password"
+                name="password"
+                id="password"
+                placeholder="Şifre"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} />
+              <label>Şifre</label>
+            </div>
+            <div className="row">
+              <input type="password"
+                name="password"
+                id="password"
+                placeholder="Tekrar Şifre"
+                value={confirmPassword}
+                onChange={(e) => setPassword(e.target.value)} />
+              <label>Tekrar Şifre</label>
+            </div>
+            <button className="btn" type="button" onClick={user_add}>Kaydol</button>
+            <div className="container">
+              <div className="item1" onClick={() => setIsLogin(true)}>
+                Hesabın var mı? Giriş Yap
+              </div>
+            </div>
+          </form>
+
+        </div>
       </section>
     </div>
   );

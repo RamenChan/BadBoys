@@ -1,13 +1,36 @@
 from db_connection import client
 from datetime import datetime
 from sezarV2 import to_hash
-from logger import log_error
+from system_utilities import log_error, system_handshake
+from core import email_validator
 
-def user_Add(username, password, salt=None, email=None):
-    try:    
-        cipher_text, salt = to_hash(password)
+def user_check(username, password, password_again, email=None):
+
+    if len(username) < 10:
+            return system_handshake(0, 'Kullanıcı Adı En Az 10 karakterden oluşmalıdır.')
+
+    if password != password_again:
+        return system_handshake(0, 'Girilen Şifreler Eşleşmiyor.')
+    
+    if email is not None and email_validator(email)==0:
+         return system_handshake(0, 'Geçersiz Email girildi.')
+    
+    db = client["BadBoys"]
+    user = db["users"]
+
+    if user.find_one({"username": username}):
+            return system_handshake(0, 'Kullanıcı adı daha önceden alınmıştır.')
+
+
+def user_add(username, password, salt=None, email=None):
+    try:
+
         db = client["BadBoys"]
-        db["users"].insert_one({
+        user = db["users"]
+        
+        cipher_text, salt = to_hash(password)
+
+        user.insert_one({
             "username": username,
             "email": email,
             "password_hash": cipher_text,
@@ -28,11 +51,11 @@ def user_Add(username, password, salt=None, email=None):
             "phone": None
         })
 
-        return 1
+        return system_handshake(1, 'Kayıt Başarıyla Gerçekleşti')
         
     except Exception as e:
         log_error(str(e), function_name="user_Add")
-        return 0
+        return system_handshake(-99)
 
 
 def user_exists(username, password):
@@ -41,19 +64,19 @@ def user_exists(username, password):
         user = db["users"].find_one({"username": username})
         
         if not user:
-            return 0
+            return system_handshake(0, 'Kullanıcı Adı veya Şifre yanlış')
 
         salt_bytes = bytes.fromhex(user.get('salt'))
 
         cipher_text, _ = to_hash(password, salt_bytes)
 
         if cipher_text == user.get('password_hash'):
-            return 1
+            return system_handshake(1, 'Kullanıcı Girişi Başarılı')
         else:
-            return 0
+            return system_handshake(0, 'Kullanıcı Adı veya Şifre yanlış')
         
     except Exception as e:
         log_error(str(e), function_name="user_exists")
-        return -1        
+        return system_handshake(-99)       
 
 

@@ -34,26 +34,31 @@ body {
 
 .overlay {
   position: relative;
-  /* absolute kaldırıldı */
   width: 50%;
   max-width: 450px;
   min-width: 300px;
   border-radius: 2rem;
   background: rgba(0, 0, 0, 0.5);
-  /* yarı saydam */
   backdrop-filter: blur(10px);
   padding: 2rem;
   text-align: center;
   color: #fff;
+  overflow: hidden;
 }
 
-.card {
+.overlay-slide {
   position: relative;
-  z-index: 1;
+  overflow: hidden;
 }
+
+.overlay-slide.slide-right .item {
+  transform: translateX(50%);
+
+}
+
+
 
 .card__title {
-  text-align: center;
   margin-bottom: 20px;
   font-size: 24px;
 }
@@ -84,17 +89,23 @@ input:focus {
   border-color: #4e9af1;
 }
 
+input,
+label,
+button {
+  font-family: 'Poppins', sans-serif;
+}
+
 input:focus+label,
 input:not(:placeholder-shown)+label {
-  top: -10px;
-  font-size: 12px;
+  top: -17px;
+  font-size: 13px;
   color: #4e9af1;
 }
 
 label {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 11.7px;
+  left: 12px;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
   pointer-events: none;
@@ -102,18 +113,48 @@ label {
 }
 
 .btn {
-  padding: 10px;
-  background: #4e9af1;
-  border: none;
-  border-radius: 10px;
-  color: #fff;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 20px;
   font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  background: #4e9af1;
+  color: #fff;
   cursor: pointer;
   transition: background 0.3s ease;
+  width: 100%
 }
+
 
 .btn:hover {
   background: #3578e5;
+}
+
+
+.container {
+  display: flex;
+  padding-top: 15px;
+  gap: 10px;
+}
+
+.item2,
+.item1 {
+  flex: 1;
+  width: 50%;
+}
+
+.item2 {
+  position: relative;
+  top: -10px;
+  left: 30px;
+}
+
+.item1 {
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: none;
 }
 
 .overlay__copy {
@@ -124,23 +165,47 @@ label {
   color: rgba(255, 255, 255, 0.7);
 }
 
+.slide-container {
+  position: relative;
+  width: 100%;
+  min-height: 380px;
+  overflow: hidden;
+}
 
-.popup {
-  position: fixed;
+/* Ortak form stili */
+.form {
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  transition: all 0.6s ease;
+  opacity: 0;
+  transform: translateX(100%);
 }
 
-.popup__content {
-  background: white;
-  padding: 2rem;
-  border-radius: 1rem;
-  max-width: 500px;
-  width: 90%;
+/* Login başlangıçta görünür */
+.show-login .form-login {
+  opacity: 1;
+  transform: translateX(0);
+  z-index: 2;
+}
+
+/* Register başlangıçta gizli */
+.show-login .form-register {
+  opacity: 0;
+  transform: translateX(100%);
+  z-index: 1;
+}
+
+/* Kayıt ekranı aktif olunca */
+.show-register .form-login {
+  opacity: 0;
+  transform: translateX(-100%);
+  z-index: 1;
+}
+
+.show-register .form-register {
+  opacity: 1;
+  transform: translateX(0);
+  z-index: 2;
 }

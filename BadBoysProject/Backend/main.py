@@ -1,17 +1,26 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from sezarV2 import to_hash  
+from user_enterance import user_exists, user_add
 
 app = Flask(__name__)
 CORS(app) 
 
-@app.route("/encrypt", methods=["POST"])
+@app.route("/user_check", methods=["POST"])
 def encrypt():
     data = request.get_json()
-    value = data.get("password")
+    result = user_exists(data.get("username"),data.get("password"))
 
-    cipher_text, salt= to_hash(value)
-    return jsonify({"cipher_text": cipher_text, "salt": salt})
+    return jsonify({"result": result})
+
+@app.route("/user_add", methods=["POST"])
+def add():
+    data = request.get_json()
+    result = user_add(data.get("username"),data.get("password"),data.get("confirmPassword"),data.get("email"))
+
+    return jsonify({"result": result})
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)

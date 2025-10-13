@@ -21,10 +21,10 @@ def sezar_algorithm(text, type, time = 2 ):
     
     if type == 'encrypt':
         for r in text:
-            if r.isupper():
+            if r.isupper() and r in alfabe_buyuk:
                 cipher_text += alfabe_buyuk[((alfabe_buyuk.index(r)) + tri(counter))%29]
                 counter += 1
-            elif r.islower():
+            elif r.islower() and r in alfabe_kucuk:
                 cipher_text += alfabe_kucuk[((alfabe_kucuk.index(r)) + tri(counter))%29]
                 counter += 1
             else:
@@ -38,10 +38,10 @@ def sezar_algorithm(text, type, time = 2 ):
         
     elif type == 'decrypt':
         for r in text:
-            if r.isupper():
+            if r.isupper() and r in alfabe_buyuk:
                 cipher_text += alfabe_buyuk[((alfabe_buyuk.index(r)) - tri(counter))%29]
                 counter += 1
-            elif r.islower():
+            elif r.islower() and r in alfabe_kucuk:
                 cipher_text += alfabe_kucuk[((alfabe_kucuk.index(r)) - tri(counter))%29]
                 counter += 1
             else:

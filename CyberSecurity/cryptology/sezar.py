@@ -52,10 +52,3 @@ print(sezar_encryption('mehmet', 'encrypt'))
 
 
 print(sezar_encryption('lemcsr', 'decrypt'))
-
-
-
-
-
-
-
