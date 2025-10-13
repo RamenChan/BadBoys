@@ -23,7 +23,7 @@ function App() {
       if (result.code === 1) {
         Swal.fire({
           title: 'Başarılı',
-          html: `<p>${response.message}</p>`,
+          html: `<p>${result.message}</p>`,
           icon: 'success',
           confirmButtonText: 'Tamam'
         });
@@ -126,7 +126,7 @@ function App() {
             </div>
             <button className="btn" type="button" onClick={user_check}> Gönder </button>
             <div className="container">
-              <div className="item1" onClick={() => setIsLogin(false)}>
+              <div id="hesabin-yok-mu" className="item1" onClick={() => { setIsLogin(false); setPassword(''); setUsername(''); }}>
                 Hesabın yok mu? Kayıt Ol
               </div>
               <div className="item2">Şifremi Unuttum</div>
@@ -146,10 +146,10 @@ function App() {
             </div>
             <div className="row">
               <input type="text"
-                name="user"
-                id="user"
+                name="usermail"
+                id="usermail"
                 placeholder="E-Mail"
-                value={email} onChange={(e) => setUsername(e.target.value)} />
+                value={email} onChange={(e) => setEmail(e.target.value)} />
               <label>E-Mail</label>
             </div>
             <div className="row">
@@ -163,16 +163,16 @@ function App() {
             </div>
             <div className="row">
               <input type="password"
-                name="password"
-                id="password"
+                name="confirmPassword"
+                id="confirmPassword"
                 placeholder="Tekrar Şifre"
                 value={confirmPassword}
-                onChange={(e) => setPassword(e.target.value)} />
+                onChange={(e) => setConfirmPassword(e.target.value)} />
               <label>Tekrar Şifre</label>
             </div>
             <button className="btn" type="button" onClick={user_add}>Kaydol</button>
             <div className="container">
-              <div className="item1" onClick={() => setIsLogin(true)}>
+              <div className="item1" onClick={() => { setIsLogin(true); setPassword(''); setUsername(''); setConfirmPassword(''); setEmail('') }}>
                 Hesabın var mı? Giriş Yap
               </div>
             </div>
