@@ -1,0 +1,445 @@
+{
+  "basic": {
+    "hostname": "Emirhan-MacBook-Pro.local",
+    "fqdn": "1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa",
+    "system": "Darwin",
+    "node": "Emirhan-MacBook-Pro.local",
+    "release": "24.0.0",
+    "version": "Darwin Kernel Version 24.0.0: Mon Aug 12 20:52:31 PDT 2024; root:xnu-11215.1.10~2/RELEASE_ARM64_T6030",
+    "machine": "arm64",
+    "processor": "arm"
+  },
+  "uptime": {
+    "boot_time": "2025-09-27 20:53:05",
+    "uptime": "2 days, 21:46:26"
+  },
+  "cpu": {
+    "logical_cpus": 11,
+    "physical_cpus": 11,
+    "cpu_freq": "4056.0 MHz",
+    "load_avg_1m_5m_15m": "1.84, 1.71, 1.65",
+    "model": "arm"
+  },
+  "memory": {
+    "total": "18.0 GB",
+    "available": "6.9 GB",
+    "used": "8.6 GB",
+    "percent_used": "61.8%",
+    "swap_total": "0.0 B",
+    "swap_used": "0.0 B",
+    "swap_percent": "0.0%"
+  },
+  "disks": [
+    {
+      "device": "/dev/disk3s1s1",
+      "mountpoint": "/",
+      "fstype": "apfs",
+      "total": "460.4 GB",
+      "used": "9.9 GB",
+      "free": "251.3 GB",
+      "percent": "3.8%"
+    },
+    {
+      "device": "/dev/disk3s6",
+      "mountpoint": "/System/Volumes/VM",
+      "fstype": "apfs",
+      "total": "460.4 GB",
+      "used": "20.0 KB",
+      "free": "251.3 GB",
+      "percent": "0.0%"
+    },
+    {
+      "device": "/dev/disk3s2",
+      "mountpoint": "/System/Volumes/Preboot",
+      "fstype": "apfs",
+      "total": "460.4 GB",
+      "used": "7.0 GB",
+      "free": "251.3 GB",
+      "percent": "2.7%"
+    },
+    {
+      "device": "/dev/disk3s4",
+      "mountpoint": "/System/Volumes/Update",
+      "fstype": "apfs",
+      "total": "460.4 GB",
+      "used": "2.8 MB",
+      "free": "251.3 GB",
+      "percent": "0.0%"
+    },
+    {
+      "device": "/dev/disk1s2",
+      "mountpoint": "/System/Volumes/xarts",
+      "fstype": "apfs",
+      "total": "500.0 MB",
+      "used": "6.0 MB",
+      "free": "481.3 MB",
+      "percent": "1.2%"
+    },
+    {
+      "device": "/dev/disk1s1",
+      "mountpoint": "/System/Volumes/iSCPreboot",
+      "fstype": "apfs",
+      "total": "500.0 MB",
+      "used": "5.4 MB",
+      "free": "481.3 MB",
+      "percent": "1.1%"
+    },
+    {
+      "device": "/dev/disk1s3",
+      "mountpoint": "/System/Volumes/Hardware",
+      "fstype": "apfs",
+      "total": "500.0 MB",
+      "used": "2.6 MB",
+      "free": "481.3 MB",
+      "percent": "0.5%"
+    },
+    {
+      "device": "/dev/disk3s5",
+      "mountpoint": "/System/Volumes/Data",
+      "fstype": "apfs",
+      "total": "460.4 GB",
+      "used": "190.2 GB",
+      "free": "251.3 GB",
+      "percent": "43.1%"
+    }
+  ],
+  "network": {
+    "interfaces": {
+      "lo0": {
+        "addresses": [
+          {
+            "family": "2",
+            "address": "127.0.0.1",
+            "netmask": "255.0.0.0",
+            "broadcast": null,
+            "ptp": null
+          },
+          {
+            "family": "30",
+            "address": "::1",
+            "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+            "broadcast": null,
+            "ptp": null
+          },
+          {
+            "family": "30",
+            "address": "fe80::1%lo0",
+            "netmask": "ffff:ffff:ffff:ffff::",
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "en0": {
+        "addresses": [
+          {
+            "family": "2",
+            "address": "192.168.10.126",
+            "netmask": "255.255.254.0",
+            "broadcast": "192.168.11.255",
+            "ptp": null
+          },
+          {
+            "family": "18",
+            "address": "2a:02:b0:d4:bf:8c",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          },
+          {
+            "family": "30",
+            "address": "fe80::c9f:d363:4c39:80f1%en0",
+            "netmask": "ffff:ffff:ffff:ffff::",
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "anpi0": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "1a:ca:92:57:c0:4c",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "anpi1": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "1a:ca:92:57:c0:4d",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "anpi2": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "1a:ca:92:57:c0:4e",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "en4": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "1a:ca:92:57:c0:2c",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "en5": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "1a:ca:92:57:c0:2d",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "en6": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "1a:ca:92:57:c0:2e",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "en1": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "36:4b:67:49:29:80",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "en2": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "36:4b:67:49:29:84",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "en3": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "36:4b:67:49:29:88",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "bridge0": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "36:4b:67:49:29:80",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "ap1": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "b2:1d:c2:9f:c3:e8",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "awdl0": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "3e:63:4d:93:59:2e",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          },
+          {
+            "family": "30",
+            "address": "fe80::3c63:4dff:fe93:592e%awdl0",
+            "netmask": "ffff:ffff:ffff:ffff::",
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "llw0": {
+        "addresses": [
+          {
+            "family": "18",
+            "address": "3e:63:4d:93:59:2e",
+            "netmask": null,
+            "broadcast": null,
+            "ptp": null
+          },
+          {
+            "family": "30",
+            "address": "fe80::3c63:4dff:fe93:592e%llw0",
+            "netmask": "ffff:ffff:ffff:ffff::",
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "utun0": {
+        "addresses": [
+          {
+            "family": "30",
+            "address": "fe80::c024:5f6c:e6ae:8a%utun0",
+            "netmask": "ffff:ffff:ffff:ffff::",
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "utun1": {
+        "addresses": [
+          {
+            "family": "30",
+            "address": "fe80::3ba:7c6:4446:9280%utun1",
+            "netmask": "ffff:ffff:ffff:ffff::",
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "utun2": {
+        "addresses": [
+          {
+            "family": "30",
+            "address": "fe80::ceac:dbaf:8d41:6a7a%utun2",
+            "netmask": "ffff:ffff:ffff:ffff::",
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "utun3": {
+        "addresses": [
+          {
+            "family": "30",
+            "address": "fe80::ce81:b1c:bd2c:69e%utun3",
+            "netmask": "ffff:ffff:ffff:ffff::",
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "utun4": {
+        "addresses": [
+          {
+            "family": "30",
+            "address": "fe80::44e1:9ee3:e40a:b630%utun4",
+            "netmask": "ffff:ffff:ffff:ffff::",
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      },
+      "utun5": {
+        "addresses": [
+          {
+            "family": "30",
+            "address": "fe80::2955:c74f:2183:e472%utun5",
+            "netmask": "ffff:ffff:ffff:ffff::",
+            "broadcast": null,
+            "ptp": null
+          }
+        ],
+        "isup": true
+      }
+    },
+    "dns_servers": []
+  },
+  "process_summary": {
+    "top_by_memory": [
+      [
+        6822,
+        "Code Helper (Plugin)",
+        0.0,
+        515538944
+      ],
+      [
+        5596,
+        "Code Helper (Renderer)",
+        0.0,
+        497156096
+      ],
+      [
+        1004,
+        "Google Chrome Helper (Renderer)",
+        0.0,
+        467025920
+      ],
+      [
+        861,
+        "lghub_agent",
+        0.0,
+        410583040
+      ],
+      [
+        913,
+        "Google Chrome Helper (Renderer)",
+        0.0,
+        389480448
+      ]
+    ],
+    "error": "'<' not supported between instances of 'NoneType' and 'NoneType'"
+  },
+  "listening_ports": [
+    {
+      "error": "(pid=4496)"
+    }
+  ]
+}

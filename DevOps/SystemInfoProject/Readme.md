@@ -1,3 +1,12 @@
+## Emirhan Ceylan Not;
+Selamlar,
+İlk önce psutil kütüphanesini kullanmak adına bir venv oluşturuldu. Bu sayede indirilen kütüphane ve kullanılan python sürümü nedeniyle yapılacak bir diğer proje etkilenmeyecektir.
+systeminfo.py dosyasını çalıştırmak için "run_systeminfo.sh" adlı bash script oluşturuldu.
+Çalıştırılmasının ardından out.json dosyası ile bilgisayar verileri elde edildi.
+
+
+
+
 ## Kullanım için
 > pip install psutil
 > python3 sysinfo.py --ports --json myhost_info.json
