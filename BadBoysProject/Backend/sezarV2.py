@@ -2,6 +2,7 @@ import math, hashlib, os
 from Crypto.Cipher import DES3
 from Crypto.Util.Padding import pad, unpad
 from dotenv import load_dotenv
+from system_utilities import system_handshake, ResultCode
 
 
 alfabe_kucuk = "ğüıjçzköybşrhdalvmtnepsuocfgi̇"
@@ -68,17 +69,25 @@ def des3_algorithm_decrypt(text):
 
 
 def to_hash(text, salt= None , iterations: int = 100_000):
+    try:
+        cipher_text = sezar_algorithm(text, 'encrypt')
+
+        cipher_text = des3_algorithm(cipher_text)
+
+        if salt is None:
+            salt = os.urandom(16)
+
+        cipher_text = hashlib.pbkdf2_hmac('sha256', cipher_text, salt, iterations)    
+
+        data = {
+            "cipher_text": cipher_text.hex(),
+            "salt": salt.hex()
+        }
+
+        return system_handshake(ResultCode.SUCCESS, "Hash oluşturuldu.", data)
     
-    cipher_text = sezar_algorithm(text, 'encrypt')
-
-    cipher_text = des3_algorithm(cipher_text)
-
-    if salt is None:
-        salt = os.urandom(16)
-
-    cipher_text = hashlib.pbkdf2_hmac('sha256', cipher_text, salt, iterations)    
-
-    return cipher_text.hex(), salt.hex()
+    except Exception as e:
+        return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="sezarV2/to_hash")
 
 
 

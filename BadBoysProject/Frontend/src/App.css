@@ -10,7 +10,7 @@ body {
   margin: 0;
   min-height: 100vh;
   width: 100vw;
-  background-image: url('./public/trees.jpg');
+  background-image: url('./public/space.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -23,7 +23,6 @@ body {
 .app {
   min-height: 100vh;
   width: 100vw;
-  background-image: url('./assets/trees.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -35,8 +34,7 @@ body {
 .overlay {
   position: relative;
   width: 50%;
-  max-width: 450px;
-  min-width: 300px;
+  min-width: 450px;
   border-radius: 2rem;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
@@ -172,7 +170,6 @@ label {
   overflow: hidden;
 }
 
-/* Ortak form stili */
 .form {
   position: absolute;
   top: 0;
@@ -183,21 +180,18 @@ label {
   transform: translateX(100%);
 }
 
-/* Login başlangıçta görünür */
 .show-login .form-login {
   opacity: 1;
   transform: translateX(0);
   z-index: 2;
 }
 
-/* Register başlangıçta gizli */
 .show-login .form-register {
   opacity: 0;
   transform: translateX(100%);
   z-index: 1;
 }
 
-/* Kayıt ekranı aktif olunca */
 .show-register .form-login {
   opacity: 0;
   transform: translateX(-100%);

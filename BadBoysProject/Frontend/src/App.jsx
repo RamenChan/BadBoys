@@ -1,6 +1,7 @@
 import './App.css';
 import Swal from 'sweetalert2';
 import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 function App() {
   const [isLogin, setIsLogin] = useState(true);
@@ -8,6 +9,7 @@ function App() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate();
 
   const user_check = async () => {
     try {
@@ -26,6 +28,8 @@ function App() {
           html: `<p>${result.message}</p>`,
           icon: 'success',
           confirmButtonText: 'Tamam'
+        }).then(() => {
+          navigate('/dashboard');
         });
       }
       else if (result.code === 0) {

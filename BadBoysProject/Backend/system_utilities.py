@@ -1,6 +1,7 @@
 from db_connection import client
 from datetime import datetime
 import traceback
+from enum import IntEnum
 
 
 def log_error(error_message, function_name="unknown"):
@@ -17,13 +18,33 @@ def log_error(error_message, function_name="unknown"):
         print("Logger hatası:", e)
 
 
-def system_handshake(resultCode, message = ''):
+class ResultCode(IntEnum): 
+    SUCCESS = 1 
+    FAIL = -1
+    INFO = 0 
+    WARNING = 2 
+    ERROR = -99
+     
+
+def system_handshake(resultCode: ResultCode, message='', data=None, error_message= None, function_name=None): 
+
+    default_messages = { 
+        ResultCode.SUCCESS: "Olumlu Durum",
+        ResultCode.FAIL: "Negatif Durum", 
+        ResultCode.INFO: "Olumsuz Durum", 
+        ResultCode.WARNING: "Beklenenden farklı bir veri çıktısı alındı.", 
+        ResultCode.ERROR: "Beklenmedik Bir Hata Oluştu!" } 
     
-    if resultCode == 1:
-        return {"status": True, "code": 1, "message": message or "Olumlu Durum"}
-    elif resultCode == 0:
-        return {"status": True, "code": 0, "message": message or "Olumsuz Durum"}
-    elif resultCode == 2:
-        return {"status": True, "code": 2, "message": message or "Beklenenden farklı bir veri çıktısı alındı."}
-    else:
-        return {"status": False, "code": -99, "message": message or "Beklenmedik Bir Hata Oluştu!"}
+    if resultCode == ResultCode.ERROR and error_message is not None:
+        try:
+            log_error(error_message or default_messages[ResultCode.ERROR], function_name=function_name)
+        except Exception as log_exc:
+            print("Logger hatası:", log_exc)
+
+
+    return { 
+        "status": resultCode != ResultCode.ERROR, 
+        "code": resultCode, 
+        "message": message or default_messages.get(resultCode, "Tanımsız durum") ,
+        "data": data
+        }
