@@ -85,14 +85,14 @@ function LoginRegister() {
             } else if (result.code === ResultCode.INFO) {
                 Swal.fire({
                     title: 'Bilgilendirme',
-                    html: `<p>${result.message}</p>`,
+                    html: `<p>${result.data.map(item => item).join("<br>")}</p>`,
                     icon: 'info',
                     confirmButtonText: 'Tamam'
                 });
             } else {
                 Swal.fire({
                     title: 'Hata',
-                    html: `<p>${result.message}</p>`,
+                    html: `<p>${result.data}</p>`,
                     icon: 'error',
                     confirmButtonText: 'Tamam'
                 });

@@ -1,22 +1,20 @@
 import math, hashlib, os
 from Crypto.Cipher import DES3
-from Crypto.Util.Padding import pad, unpad
-from dotenv import load_dotenv
+from Crypto.Util.Padding import pad
+from dotenv import dotenv_values
 from system_utilities import system_handshake, ResultCode
+from db_connection import client 
 
-
-alfabe_kucuk = "ğüıjçzköybşrhdalvmtnepsuocfgi̇"
-alfabe_buyuk = "ŞZÜKÇYIRĞJHİTVDMÖEALONBPGSUFC"
-
-dotenv_path = r"C:\Users\Mehme\Masaüstü\Projects\BadBoysProject\Backend\.env"
-load_dotenv(dotenv_path)
-
-MASTER_3DES_KEY = os.getenv("MASTER_3DES_KEY")
-MASTER_3DES_KEY = bytes.fromhex(MASTER_3DES_KEY)
-
-
+def get_env():
+    config = dotenv_values() 
+    masterkey = bytes.fromhex(config["MASTER_3DES_KEY"])
+    return masterkey
 
 def sezar_algorithm(text, type, time = 2 ):
+    
+    alfabe_kucuk = "ğüıjçzköybşrhdalvmtnepsuocfgi̇"
+    alfabe_buyuk = "ŞZÜKÇYIRĞJHİTVDMÖEALONBPGSUFC"
+    
     cipher_text = ""
     counter = 1
     
@@ -59,20 +57,28 @@ def sezar_algorithm(text, type, time = 2 ):
 def tri(i):
     return round((math.sin(i) + 1) * 15)
 
-def des3_algorithm(text):
-    cipher = DES3.new(MASTER_3DES_KEY, DES3.MODE_ECB)
-    return cipher.encrypt(pad(text.encode(), DES3.block_size))
+def des3_algorithm(text, master_key, dek_key) -> bytes:
+    
+    master_key = des3_algorithm_decrypt(master_key, dek_key) 
+    cipher = DES3.new(master_key, DES3.MODE_ECB)
+    encrypted = cipher.encrypt(pad(text.encode(), DES3.block_size))
+    return encrypted
 
-def des3_algorithm_decrypt(text):
-    cipher = DES3.new(MASTER_3DES_KEY, DES3.MODE_ECB)
-    return unpad(cipher, DES3.block_size).decode()
-
+def des3_algorithm_decrypt(encrypted_hex, key_hex) -> bytes:
+    cipher = DES3.new(bytes.fromhex(key_hex), DES3.MODE_ECB)
+    decrypted = cipher.decrypt(encrypted_hex)
+    return decrypted
 
 def to_hash(text, salt= None , iterations: int = 100_000):
     try:
         cipher_text = sezar_algorithm(text, 'encrypt')
 
-        cipher_text = des3_algorithm(cipher_text)
+        db = client["BadBoys"]
+        dek_key_collection = db["DES3_DEKS"]
+        oldest_dek_doc = dek_key_collection.find_one(sort=[("_id", -1)])
+        oldest_dek_doc = oldest_dek_doc["dek"]
+
+        cipher_text = des3_algorithm(cipher_text, get_env(), oldest_dek_doc)
 
         if salt is None:
             salt = os.urandom(16)
@@ -88,12 +94,4 @@ def to_hash(text, salt= None , iterations: int = 100_000):
     
     except Exception as e:
         return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="sezarV2/to_hash")
-
-
-
-
-
-
-
-
-
+    

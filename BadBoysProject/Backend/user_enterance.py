@@ -48,11 +48,13 @@ def user_add_check(username, password, password_again, email=None):
         if password != password_again:
             return system_handshake(ResultCode.INFO, 'Girilen Şifreler Eşleşmiyor.')
 
-        if password_validator(password)["code"] == ResultCode.FAIL:
-            return system_handshake(ResultCode.INFO, 'Girilen Şifre şifreleme standartlarına uygun değildir.')
+        password_result = password_validator(password)
+        if password_result["code"] != ResultCode.SUCCESS:
+            return password_result
 
-        if email != '' and email_validator(email)["code"] == ResultCode.FAIL:
-            return system_handshake(ResultCode.INFO, 'Geçersiz Email girildi.')
+        if email != None: 
+            if email_validator(email)["code"] == ResultCode.FAIL:
+                return system_handshake(ResultCode.INFO, 'Geçersiz Email girildi.')
         
         db = client["BadBoys"]
         user = db["users"]
@@ -62,10 +64,8 @@ def user_add_check(username, password, password_again, email=None):
 
         return user_add(username, password, email=email)
 
-
     except Exception as e:
         return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="user_enterance/user_add_check")
-
 
 def user_exists(username, password):
     try:
