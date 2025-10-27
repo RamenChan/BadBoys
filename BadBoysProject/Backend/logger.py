@@ -2,7 +2,7 @@ from db_connection import client
 from datetime import datetime
 import traceback
 
-
+"""
 def log_error(error_message, function_name="unknown"):
 
     try:
@@ -15,3 +15,4 @@ def log_error(error_message, function_name="unknown"):
         })
     except Exception as e:
         print("Logger hatası:", e)
+        """
