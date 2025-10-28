@@ -74,3 +74,4 @@ def validate_payload(data):
     
     else: 
         return system_handshake(ResultCode.SUCCESS,'Anahtar Geçerli')
+
