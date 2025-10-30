@@ -13,11 +13,11 @@ def encrypt():
     data = request.get_json()
 
     responce = validate_payload(data)
-
     if responce['code'] == ResultCode.SUCCESS: 
         result = user_exists(
             data.get("username"),
-            data.get("password")
+            data.get("password"),
+            ip=request.remote_addr
             )
         return jsonify({"result": result})
     else:
