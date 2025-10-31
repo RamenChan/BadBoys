@@ -119,11 +119,11 @@ class bruteforce_protector:
         if ip:
             self.ip_collection.update_one({"ip":ip}, 
                                           {"$set": {"failed_login_attempts": 0, 
-                                                                               "lock_until": None, 
-                                                                               "last_attempt": now, 
-                                                                               "ip": ip, 
-                                                                               "is_active": True}}
-                                                                               , upsert=True)
+                                                    "lock_until": None, 
+                                                    "last_attempt": now, 
+                                                    "ip": ip, 
+                                                    "is_active": True}}
+                                                    , upsert=True)
         
         return system_handshake(ResultCode.SUCCESS)
             

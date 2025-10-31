@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from bruteforce_handler import bruteforce_protector
 import hmac
 
-protector = bruteforce_protector()
 
 def user_add(username, password, salt=None, email=None):
     try:
@@ -45,6 +44,9 @@ def user_add(username, password, salt=None, email=None):
 
 def user_add_check(username, password, password_again, email=None):
     try:
+        
+        if not username:
+            return system_handshake(ResultCode.INFO, 'Lütfen Bir Kullanıcı Adı Girin.')
 
         if len(username) < 10:
             return system_handshake(ResultCode.INFO, 'Kullanıcı Adı En Az 10 karakterden oluşmalıdır.')
@@ -64,7 +66,7 @@ def user_add_check(username, password, password_again, email=None):
         user = db["users"]
 
         if user.find_one({"username": username}):
-                return system_handshake(ResultCode.INFO, 'Kullanıcı adı daha önceden alınmıştır.')
+            return system_handshake(ResultCode.INFO, 'Kullanıcı adı daha önceden alınmıştır.')
 
         return user_add(username, password, email=email)
 
@@ -74,31 +76,34 @@ def user_add_check(username, password, password_again, email=None):
 
 def user_exists(username, password, ip):
     try:
+        
+        #protector = bruteforce_protector()
+
 
         if not username:
             return system_handshake(ResultCode.INFO, 'Kullanıcı Adı veya Şifre yanlış')
         
-        res = protector.bruteforce_check(username, ip)
-
-        if res['code'] != ResultCode.SUCCESS:
-            return res
-
+        #res = protector.bruteforce_check(username, ip)
+        """
+                if res['code'] != ResultCode.SUCCESS:
+                    return res
+        """
         db = client["BadBoys"]
         user = db["users"].find_one({"username": username})
         
         if not user:
-            protector.record_fail(ip=ip)
+        #    protector.record_fail(ip=ip)
             return system_handshake(ResultCode.INFO, "Kullanıcı Adı veya Şifre yanlış")
 
         salt_bytes = bytes.fromhex(user.get('salt'))
         result = to_hash(password, salt_bytes)
 
         if hmac.compare_digest(result["data"]["cipher_text"], user.get('password_hash')):    
-            protector.logon_success(username=username, ip=ip)
+        #    protector.logon_success(username=username, ip=ip)
             return system_handshake(ResultCode.SUCCESS, "Kullanıcı Girişi Başarılı")
 
         else:
-            protector.logon_fail(username=username, ip=ip)
+        #    protector.logon_fail(username=username, ip=ip)
             return system_handshake(ResultCode.INFO, "Kullanıcı Adı veya Şifre yanlış")
         
     except Exception as e:  

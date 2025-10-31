@@ -1,9 +1,8 @@
 function Dashboard() {
     return (
-        <div className="overlay">
-            deneme
-        </div>
-
+        <h1 style={{ color: 'white' }}>
+            Dashboard Sayfasına Hoşgeldiniz.
+        </h1>
     );
 }
 
