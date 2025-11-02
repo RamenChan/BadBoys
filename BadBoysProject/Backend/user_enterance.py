@@ -77,34 +77,38 @@ def user_add_check(username, password, password_again, email=None):
 def user_exists(username, password, ip):
     try:
         
-        #protector = bruteforce_protector()
+        protector = bruteforce_protector()
 
 
         if not username:
+            protector.logon_fail(ip=ip)
             return system_handshake(ResultCode.INFO, 'Kullanıcı Adı veya Şifre yanlış')
         
-        #res = protector.bruteforce_check(username, ip)
-        """
-                if res['code'] != ResultCode.SUCCESS:
-                    return res
-        """
+        res = protector.bruteforce_check(username=username, ip=ip)
+        
+        if res['code'] != ResultCode.SUCCESS:
+            protector.logon_fail(username=username, ip=ip)
+            return res
+        
         db = client["BadBoys"]
         user = db["users"].find_one({"username": username})
         
         if not user:
-        #    protector.record_fail(ip=ip)
-            return system_handshake(ResultCode.INFO, "Kullanıcı Adı veya Şifre yanlış")
+            protector.logon_fail(ip=ip)
+            return system_handshake(ResultCode.INFO, "Kullanıcı Adı veya Şifre yanlış ")
 
         salt_bytes = bytes.fromhex(user.get('salt'))
         result = to_hash(password, salt_bytes)
 
         if hmac.compare_digest(result["data"]["cipher_text"], user.get('password_hash')):    
-        #    protector.logon_success(username=username, ip=ip)
-            return system_handshake(ResultCode.SUCCESS, "Kullanıcı Girişi Başarılı")
+            
+            return protector.logon_success(username=username, ip=ip)
 
         else:
-        #    protector.logon_fail(username=username, ip=ip)
-            return system_handshake(ResultCode.INFO, "Kullanıcı Adı veya Şifre yanlış")
+            
+            return protector.logon_fail(username=username, ip=ip)
         
     except Exception as e:  
         return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="user_enterance/user_exists")    
+
+print(user_exists('user','1', '127.0.0.1'))
