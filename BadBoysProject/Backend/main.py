@@ -4,6 +4,10 @@ from sezarV2 import to_hash
 from user_enterance import user_exists, user_add_check
 from core import validate_payload
 from system_utilities import ResultCode, system_handshake
+from key_rotation import rotate_master_key
+import threading
+import time
+import subprocess 
 
 app = Flask(__name__)
 CORS(app) 
@@ -39,7 +43,19 @@ def add():
     else:
         return jsonify({"result": responce})
 
-
+def key_rotation_scheduler():
+    while True:
+        print("[ROTATION] Key rotation başlatılıyor...")
+        try:
+            rotate_master_key()
+            print("[ROTATION] Key rotation başarıyla tamamlandı.")
+        except Exception as e:
+            print('[ROTATION] Key rotation hatası alındı. DB kayıt atıldı.')
+            system_handshake(ResultCode.ERROR, error_message=str(e), function_name='main/key_rotation_scheduler')
+        time.sleep(600)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8000)
+    scheduler_thread = threading.Thread(target=key_rotation_scheduler, daemon=True)
+    scheduler_thread.start()
+
+    app.run(debug=False, use_reloader=False, port=8000)

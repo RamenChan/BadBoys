@@ -104,13 +104,11 @@ def rotate_master_key():
 
     # MASTER KEY'i oku
     master_key = get_master_key()
-    print("Mevcut MASTER_3DES_KEY:", master_key.hex())
 
     logger(log_col, new_dek_id, 1, "Başlangıç", f"{new_dek_id-1} id'li Eski DEK alındı. MASTER_3DES_KEY alındı.")
 
     # MASTER KEY çöz
     decrypted_master = des3_decrypt(bytes.fromhex(latest_dek["dek"]), master_key)
-    print("Çözülmüş MASTER_3DES_KEY:", decrypted_master.hex())
 
     logger(log_col, new_dek_id, 2, "Master Key Şifresini Çöz", f"Ham Master Key: {decrypted_master.hex()[-3:]}")
 
@@ -121,7 +119,6 @@ def rotate_master_key():
     encrypted_master = des3_encrypt(new_dek, decrypted_master)
     encrypted_master_hex = encrypted_master.hex()
 
-    print("Yeni şifrelenmiş MASTER_3DES_KEY:", encrypted_master_hex)
 
     logger(log_col, new_dek_id, 3, "Master Key Şifrele",
            f"Master key şifrelendi. Yeni DEK: {new_dek.hex()[-3:]}")
@@ -140,7 +137,7 @@ def rotate_master_key():
     deactivate_old_dek(dek_col, new_dek_id-1)
     
     print(f"{new_dek_id-1} id'li Eski DEK kayıdı pasife alındı.")
-    logger(log_col, new_dek_id, 5, "Tamamlandı", f"{new_dek_id-1} id'li Eski DEK kayıdı pasife alındı.")
+    logger(log_col, new_dek_id, 6, "Tamamlandı", f"{new_dek_id-1} id'li Eski DEK kayıdı pasife alındı.")
 
     return encrypted_master_hex, new_dek.hex()
 

@@ -22,10 +22,13 @@ def password_validator(password):
     if not re.search(r"\d", password):
         errors.append("Şifre en az bir rakam içermeli.")
     if not re.search(r"[@#%-]", password):
-        errors.append("Şifre en az bir özel karakter (@, #, %, -) içermeli.")
+        errors.append("Şifre en az bir (@, #, %, -) karakterlerinden içermeli.")
 
     if errors:
         return system_handshake(ResultCode.INFO, message="Şifre doğrulama başarısız", data=errors)
+    elif len(password) >= 72:
+        errors.append("Şifreniz 72 karakterden fazla olamaz.")
+        return system_handshake(ResultCode.INFO, message="Şifre doğrulama başarısız", data=errors)            
     else:
         return system_handshake(ResultCode.SUCCESS,message="Şifre geçerli")
     

@@ -111,4 +111,4 @@ def user_exists(username, password, ip):
     except Exception as e:  
         return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="user_enterance/user_exists")    
 
-print(user_exists('user','1', '127.0.0.1'))
+#print(user_exists('user','1', '127.0.0.1'))
