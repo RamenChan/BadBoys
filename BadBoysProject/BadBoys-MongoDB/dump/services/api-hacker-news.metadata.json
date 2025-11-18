@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"59a07c3bb60d47cc9b163471d5147d47","collectionName":"api-hacker-news","type":"collection"}
