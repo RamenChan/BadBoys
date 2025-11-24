@@ -1,9 +1,7 @@
 from db_connection import client
-from datetime import datetime
 from sezarV2 import to_hash
 from system_utilities import system_handshake, ResultCode
-from core import email_validator, password_validator
-from datetime import datetime, timedelta
+from core import email_validator, password_validator, now_ts
 from bruteforce_handler import bruteforce_protector
 import hmac
 
@@ -21,8 +19,8 @@ def user_add(username, password, salt=None, email=None):
             "email": email,
             "password_hash": result["data"]["cipher_text"],
             "salt": result["data"]["salt"],
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+            "created_at": now_ts(),
+            "updated_at": now_ts(),
             "last_login": None,
             "is_active": True,
             "is_verified": False,
@@ -110,5 +108,3 @@ def user_exists(username, password, ip):
         
     except Exception as e:  
         return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="user_enterance/user_exists")    
-
-#print(user_exists('user','1', '127.0.0.1'))

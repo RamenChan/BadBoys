@@ -95,3 +95,4 @@ def to_hash(text, salt= None , iterations: int = 100_000):
     except Exception as e:
         return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="sezarV2/to_hash")
     
+

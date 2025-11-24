@@ -1,6 +1,6 @@
 import requests
 from db_connection import client
-from datetime import datetime
+from core import now_ts
 from system_utilities import ResultCode, system_handshake
 import pytz
 
@@ -23,12 +23,11 @@ def get_data_by_api():
                 item["source"] = "api"
                 stories.append(item)
 
-        tr_tz = pytz.timezone("Europe/Istanbul")
-        now_tr = datetime.now(tr_tz)
+        
 
 
         doc = {
-            "fetched_at": now_tr.strftime("%d.%m.%Y %H:%M:%S"),
+            "fetched_at": now_ts(),
             "stories": stories
         }
         result = collection.insert_one(doc) 

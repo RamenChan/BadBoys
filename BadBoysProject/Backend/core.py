@@ -1,6 +1,8 @@
 from email_validator import validate_email, EmailNotValidError
 import re
 from system_utilities import system_handshake, ResultCode
+from datetime import datetime, timezone
+
 
 def email_validator(email):
     try:
@@ -78,3 +80,44 @@ def validate_payload(data):
     else: 
         return system_handshake(ResultCode.SUCCESS,'Anahtar Geçerli')
 
+def now_ts():
+    try:
+        return int(datetime.now(timezone.utc).timestamp())
+    except Exception as e:
+        return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="core/now_ts")
+
+def now_date():
+    try:
+        return datetime.now(timezone.utc)
+    except Exception as e:
+        return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="core/now_date")
+
+def date_to_timestamp(date):
+    try:
+        if isinstance(date, int):
+            return date
+        if isinstance(date, float):
+            return int(date)
+        if isinstance(date, str):
+            try:
+                dt = datetime.fromisoformat(date.replace("Z", "+00:00"))
+                return int(dt.replace(tzinfo=timezone.utc).timestamp())
+            except:
+                pass
+            raise ValueError("Unsupported string date format")
+
+        if isinstance(date, datetime):
+            return int(date.replace(tzinfo=timezone.utc).timestamp())
+
+        return system_handshake(ResultCode.INFO, message='Beklenmeyen Tarih Formatı Girildi')
+
+    except Exception as e:
+        return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="core/date_to_timestamp")
+
+def timestamp_to_date(ts):
+    try:
+        if isinstance(ts, datetime):
+            return ts
+        return datetime.fromtimestamp(int(ts), tz=timezone.utc)
+    except Exception as e:
+        return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="core/timestamp_to_date")

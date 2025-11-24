@@ -5,6 +5,11 @@ import '../App.css';
 import { io } from "socket.io-client";
 
 
+function timestampToDate(ts) {
+    if (!ts) return null;
+    return new Date(ts * 1000).toLocaleString();
+}
+
 
 
 function Dashboard() {
@@ -70,7 +75,7 @@ function Dashboard() {
                 </ul>
                 {storiesFetchedAt && (
                     <div className="fetched-at">
-                        Son güncelleme: {storiesFetchedAt}
+                        <p>Son Güncelleme: {storiesFetchedAt ? new Date(storiesFetchedAt * 1000).toLocaleString() : "Bilinmiyor"}</p>
                     </div>
                 )}
             </div>

@@ -1,18 +1,18 @@
-from datetime import datetime, timedelta
 from system_utilities import system_handshake, ResultCode
 from db_connection import client
+from core import now_ts
 
 
 class bruteforce_protector:
     
     USER_WARN_LOCK = 3
-    USER_TEMP_LOCK_TIME = timedelta(minutes=15)
+    USER_TEMP_LOCK_TIME = 15*60  # 15 dk
     USER_HARD_LOCK = 6 
 
     IP_WARN_LOCK = 10
-    IP_TEMP_LOCK_TIME = timedelta(minutes=30)
+    IP_TEMP_LOCK_TIME = 30*60    # 30 dk
     IP_HARD_LOCK = 30
-    IP_HARD_LOCK_TIME = timedelta(hours=24)
+    IP_HARD_LOCK_TIME = 24*60*60 # 24 saat
 
     def __init__(self, db_name='BadBoys'):
 
@@ -20,13 +20,10 @@ class bruteforce_protector:
         self.db = self.client[db_name]
         self.users_collection = self.db["users"]
         self.ip_collection = self.db["ips"]
-    
-    def date_now(self):
-        return datetime.now()
         
     def bruteforce_check(self, username = None, ip=None):
         try:
-            now = self.date_now()
+            now = now_ts()
             return_message = []
 
             if username:
@@ -69,7 +66,7 @@ class bruteforce_protector:
 
         try:
 
-            now = self.date_now()
+            now = now_ts()
             return_message = []
 
 
@@ -123,7 +120,7 @@ class bruteforce_protector:
 
     def logon_success(self, username, ip):
         try:
-            now = self.date_now()
+            now = now_ts()
 
             if username:
                 user = self.users_collection.find_one({'username':username})

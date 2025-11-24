@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from core import now_ts
 from dotenv import set_key, find_dotenv, dotenv_values
 from Crypto.Cipher import DES3
 from db_connection import client
@@ -27,7 +27,7 @@ def insert_dek(collection, dek_hex, dek_id):
     """Yeni DEK kaydını MongoDB'ye ekler."""
     dek_doc = {
         "dek": dek_hex,
-        "create_date": datetime.now(),
+        "create_date": now_ts(),
         "status": "A",
         "rotate_date": None,
         "3DES_DEK_ID": dek_id
@@ -38,7 +38,7 @@ def deactivate_old_dek(collection, dek_id):
     """Eski aktif DEK kaydını pasif hale getirir."""
     collection.update_one(
         {"3DES_DEK_ID": dek_id},
-        {"$set": {"status": "P", "rotate_date": datetime.now()}}
+        {"$set": {"status": "P", "rotate_date": now_ts()}}
     )
 
 
