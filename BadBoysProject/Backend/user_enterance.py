@@ -4,6 +4,7 @@ from system_utilities import system_handshake, ResultCode
 from core import email_validator, password_validator, now_ts
 from bruteforce_handler import bruteforce_protector
 import hmac
+from config import Config
 
 
 def user_add(username, password, salt=None, email=None):
@@ -46,7 +47,7 @@ def user_add_check(username, password, password_again, email=None):
         if not username:
             return system_handshake(ResultCode.INFO, 'Lütfen Bir Kullanıcı Adı Girin.')
 
-        if len(username) < 10:
+        if len(username) < Config.USERNAME_MIN_LENGTH:
             return system_handshake(ResultCode.INFO, 'Kullanıcı Adı En Az 10 karakterden oluşmalıdır.')
 
         if password != password_again:
@@ -108,3 +109,4 @@ def user_exists(username, password, ip):
         
     except Exception as e:  
         return system_handshake(ResultCode.ERROR, error_message=str(e), function_name="user_enterance/user_exists")    
+

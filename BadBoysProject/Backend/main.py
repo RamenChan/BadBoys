@@ -1,21 +1,33 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
-from sezarV2 import to_hash  
+from sezarV2 import to_hash, get_env
 from user_enterance import user_exists, user_add_check
 from core import validate_payload
 from system_utilities import ResultCode, system_handshake
 from key_rotation import rotate_master_key
 from services.api import get_stories, get_data_by_api, get_data_by_html
+from config import Config
 import threading
 import time
+import os
 
 
 
 app = Flask(__name__)
-CORS(app) 
-socketio = SocketIO(app, cors_allowed_origins="*")
 
+app.config.from_object(Config)
+
+app.config['SESSION_COOKIE_SECURE'] = Config.SESSION_COOKIE_SECURE
+app.config['SESSION_COOKIE_HTTPONLY'] = Config.SESSION_COOKIE_HTTPONLY
+app.config['SESSION_COOKIE_SAMESITE'] = Config.SESSION_COOKIE_SAMESITE
+
+
+CORS(app, origins=Config.CORS_ORIGINS) 
+socketio = SocketIO(
+    app, 
+    cors_allowed_origins=Config.CORS_ORIGINS
+)
 
 
 @app.route("/user_check", methods=["POST"])
@@ -58,7 +70,7 @@ def key_rotation_scheduler():
         except Exception as e:
             print('[ROTATION] Key rotation hatası alındı. DB kayıt atıldı.')
             system_handshake(ResultCode.ERROR, error_message=str(e), function_name='main/key_rotation_scheduler')
-        time.sleep(600)
+        time.sleep(Config.KEY_ROTATION_INTERVAL)
 
 
 @app.route("/api/stories", methods=["GET"])
@@ -91,36 +103,23 @@ def databot_fetch_scheduler():
         except Exception as e:
             print("[DATA_BOT] Veri çekim hatası. DB kayıt atıldı.")
             system_handshake(ResultCode.ERROR, error_message=str(e), function_name="main/databot_fetch_scheduler")
-        time.sleep(60)
+        time.sleep(Config.DATA_FETCH_INTERVAL)
 
-
-
-
-"""
-def api_fetch_scheduler():
-    while True:
-        print("[DATA_BOT] API veri çekimi başlatılıyor...")
-        try:
-            get_data_by_api()   
-            print("[API_DATA] API veri çekimi başarıyla tamamlandı.")
-
-            latest = get_stories('api')
-            socketio.emit("new_stories", latest) 
-
-
-
-        except Exception as e:
-            print("[DATA_BOT] DATA_BOT veri çekim hatası. DB kayıt atıldı.")
-            system_handshake(ResultCode.ERROR, error_message=str(e), function_name="main/api_fetch_scheduler")
-        time.sleep(600)
-"""
-
-
+def start_background_tasks():
+    time.sleep(2)  
+    threading.Thread(target=key_rotation_scheduler, daemon=True).start()
+    time.sleep(2)
+    threading.Thread(target=databot_fetch_scheduler, daemon=True).start()
 
 
 if __name__ == "__main__":
-    threading.Thread(target=key_rotation_scheduler, daemon=True).start()
+    threading.Thread(target=start_background_tasks, daemon=True).start()
 
-    threading.Thread(target=databot_fetch_scheduler, daemon=True).start()
 
-    app.run(debug=True, use_reloader=False, port=8000)
+    app.run(
+        debug=Config.DEBUG,
+        use_reloader=Config.RELOADER,
+        port=int(os.getenv('PORT', 8000)),
+        host=os.getenv('HOST', '0.0.0.0')
+    )
+    

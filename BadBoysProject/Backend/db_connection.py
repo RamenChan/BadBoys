@@ -2,6 +2,7 @@ import os
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from dotenv import load_dotenv
+from config import Config
 
 load_dotenv()
 
@@ -16,15 +17,15 @@ class MongoDB:
 
     @staticmethod
     def _create_client():
-        host = os.getenv("MONGO_HOST", "localhost")
-        port = int(os.getenv("MONGO_PORT", 27017))
-        user = os.getenv("MONGO_USER")
-        password = os.getenv("MONGO_PASSWORD")
-        db_name = os.getenv("MONGO_DB")
+        host = Config.MONGO_HOST
+        port = Config.MONGO_PORT
+        user = Config.MONGO_USER
+        password = Config.MONGO_PASSWORD
+        db_name = Config.MONGO_DB
 
-        tls_enabled = os.getenv("MONGO_TLS", "false").lower() == "true"
-        tls_ca_file = os.getenv("MONGO_TLS_CA_FILE")
-        tls_cert_file = os.getenv("MONGO_TLS_CERT_FILE")
+        tls_enabled = Config.MONGO_TLS
+        tls_ca_file = Config.MONGO_TLS_CA_FILE
+        tls_cert_file = Config.MONGO_TLS_CERT_FILE
 
         if not all([user, password, db_name]):
             raise RuntimeError("MongoDB bilgilerine ulaşılamadı.")
@@ -38,8 +39,13 @@ class MongoDB:
         )
 
         client_kwargs = {
-            "serverSelectionTimeoutMS": 3000,
-            "connectTimeoutMS": 5000,
+            "serverSelectionTimeoutMS": Config.MONGO_SERVER_SELECTION_TIMEOUT,
+            "connectTimeoutMS": Config.MONGO_CONNECT_TIMEOUT,
+            "socketTimeoutMS": Config.MONGO_SOCKET_TIMEOUT,
+            "maxPoolSize": Config.MONGO_MAX_POOL_SIZE,
+            "minPoolSize": Config.MONGO_MIN_POOL_SIZE,
+            "retryWrites": True,
+            "retryReads": True,
         }
 
 

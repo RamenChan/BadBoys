@@ -2,6 +2,7 @@ from email_validator import validate_email, EmailNotValidError
 import re
 from system_utilities import system_handshake, ResultCode
 from datetime import datetime, timezone
+from config import Config
 
 
 def email_validator(email):
@@ -15,7 +16,7 @@ def email_validator(email):
 def password_validator(password):
     errors = []
 
-    if not (len(password) <= 12):
+    if not (len(password) <= Config.PASSWORD_MIN_LENGTH):
         errors.append("Şifre en az 12 karakterden oluşmalı.")
     if not re.search(r"[a-z]", password):
         errors.append("Şifre en az bir küçük harf içermeli.")
@@ -28,7 +29,7 @@ def password_validator(password):
 
     if errors:
         return system_handshake(ResultCode.INFO, message="Şifre doğrulama başarısız", data=errors)
-    elif len(password) >= 72:
+    elif len(password) >= Config.PASSWORD_MAX_LENGTH:
         errors.append("Şifreniz 72 karakterden fazla olamaz.")
         return system_handshake(ResultCode.INFO, message="Şifre doğrulama başarısız", data=errors)            
     else:

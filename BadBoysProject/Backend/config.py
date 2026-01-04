@@ -1,0 +1,251 @@
+# config.py
+import os
+from dotenv import load_dotenv
+from typing import Optional
+import secrets
+
+
+
+env = os.getenv('FLASK_ENV')
+
+if env == 'live':
+    load_dotenv('.env.live')
+elif env == 'test':
+    load_dotenv('.env.test')
+else:
+    load_dotenv('.env.dev')
+
+class BaseConfig:
+    """Base configuration - ortak ayarlar"""
+    
+    # ============================================
+    # APPLICATION
+    # ============================================
+    APP_NAME = "BadBoys"
+    VERSION = "1.0.0"
+    
+    # Flask
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    if not SECRET_KEY:
+        raise ValueError("SECRET_KEY tanımlanmalı!")
+    
+    # ============================================
+    # MONGODB
+    # ============================================
+    MONGO_HOST = os.getenv('MONGO_HOST', 'localhost')
+    MONGO_PORT = int(os.getenv('MONGO_PORT', 27017))
+    MONGO_USER = os.getenv('MONGO_USER')
+    MONGO_PASSWORD = os.getenv('MONGO_PASSWORD')
+    MONGO_DB = os.getenv('MONGO_DB', 'BadBoys')
+    MONGO_AUTH_SOURCE = os.getenv('MONGO_AUTH_SOURCE')
+    
+    # MongoDB TLS
+    MONGO_TLS = os.getenv('MONGO_TLS', 'false').lower() == 'true'
+    MONGO_TLS_CA_FILE = os.getenv('MONGO_TLS_CA_FILE')
+    MONGO_TLS_CERT_FILE = os.getenv('MONGO_TLS_CERT_FILE')
+    MONGO_TLS_ALLOW_INVALID = os.getenv('MONGO_TLS_ALLOW_INVALID', 'false').lower() == 'true'
+    
+    # MongoDB Connection Pool
+    MONGO_MAX_POOL_SIZE = int(os.getenv('MONGO_MAX_POOL_SIZE', 50))
+    MONGO_MIN_POOL_SIZE = int(os.getenv('MONGO_MIN_POOL_SIZE', 10))
+    MONGO_SERVER_SELECTION_TIMEOUT = int(os.getenv('MONGO_SERVER_SELECTION_TIMEOUT', 5000))
+    MONGO_CONNECT_TIMEOUT = int(os.getenv('MONGO_CONNECT_TIMEOUT', 10000))
+    MONGO_SOCKET_TIMEOUT = int(os.getenv('MONGO_SOCKET_TIMEOUT', 20000))
+    
+    # ============================================
+    # ENCRYPTION
+    # ============================================
+    MASTER_3DES_KEY = os.getenv('MASTER_3DES_KEY')
+    if not MASTER_3DES_KEY:
+        raise ValueError("MASTER_3DES_KEY tanımlanmalı!")
+    
+    # Key Rotation
+    KEY_ROTATION_INTERVAL = int(os.getenv('KEY_ROTATION_INTERVAL', 600)) 
+    
+    # Password Hashing
+    PBKDF2_ITERATIONS = int(os.getenv('PBKDF2_ITERATIONS', 100_000))
+    PBKDF2_ALGORITHM = os.getenv('PBKDF2_ALGORITHM', 'sha256')
+    
+    # Sezar Algorithm
+    SEZAR_PASSES = int(os.getenv('SEZAR_PASSES', 2))
+    
+    # ============================================
+    # SECURITY
+    # ============================================
+    # CORS
+    CORS_ORIGINS = os.getenv('CORS_ORIGINS').split(',')
+        
+    # Session
+    SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE').lower() == 'true'
+    SESSION_COOKIE_HTTPONLY = os.getenv('SESSION_COOKIE_HTTPONLY').lower() == 'true'
+    SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE')
+    
+    # Brute Force Protection
+    USER_WARN_LOCK = int(os.getenv('USER_WARN_LOCK', 3))
+    USER_TEMP_LOCK_TIME = int(os.getenv('USER_TEMP_LOCK_TIME', 900))  # 15 dakika
+    USER_HARD_LOCK = int(os.getenv('USER_HARD_LOCK', 6))
+    
+    IP_WARN_LOCK = int(os.getenv('IP_WARN_LOCK', 10))
+    IP_TEMP_LOCK_TIME = int(os.getenv('IP_TEMP_LOCK_TIME', 1800))  # 30 dakika
+    IP_HARD_LOCK = int(os.getenv('IP_HARD_LOCK', 30))
+    IP_HARD_LOCK_TIME = int(os.getenv('IP_HARD_LOCK_TIME', 86400))  # 24 saat
+
+    # Password Policy
+    PASSWORD_MIN_LENGTH = int(os.getenv('PASSWORD_MIN_LENGTH'))
+    PASSWORD_MAX_LENGTH = int(os.getenv('PASSWORD_MAX_LENGTH'))
+    USERNAME_MIN_LENGTH = int(os.getenv('USERNAME_MIN_LENGTH'))
+    
+    # ============================================
+    # DATA FETCHING
+    # ============================================
+    DATA_FETCH_INTERVAL = int(os.getenv('DATA_FETCH_INTERVAL', 60)) 
+    HACKER_NEWS_API_URL = os.getenv('HACKER_NEWS_API_URL', 'https://hacker-news.firebaseio.com/v0')
+    HACKER_NEWS_HTML_URL = os.getenv('HACKER_NEWS_HTML_URL', 'https://news.ycombinator.com/news')
+    MAX_STORIES_FETCH = int(os.getenv('MAX_STORIES_FETCH', 20))
+   
+    # ============================================
+    # BRUTEFORCE HANDLER
+    # ============================================
+    USER_WARN_LOCK = int(os.getenv('USER_WARN_LOCK'))
+    USER_TEMP_LOCK_TIME = int(os.getenv('USER_TEMP_LOCK_TIME'))
+    USER_HARD_LOCK = int(os.getenv('USER_HARD_LOCK'))
+
+    IP_WARN_LOCK = int(os.getenv('IP_WARN_LOCK'))
+    IP_TEMP_LOCK_TIME = int(os.getenv('IP_TEMP_LOCK_TIME')) 
+    IP_HARD_LOCK = int(os.getenv('IP_HARD_LOCK'))
+    IP_HARD_LOCK_TIME = int(os.getenv('IP_HARD_LOCK_TIME')) 
+
+    # ============================================
+    # LOGGING
+    # ============================================
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+    LOG_FILE = os.getenv('LOG_FILE', 'logs/badboys.log')
+    LOG_MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', 10485760))  # 10MB
+    LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', 10))
+    
+    # ============================================
+    # VALIDATION
+    # ============================================
+    @classmethod
+    def validate(cls):
+        """Configuration validation"""
+        errors = []
+        
+        # Required fields
+        required = [
+            'SECRET_KEY',
+            'MASTER_3DES_KEY',
+            'MONGO_USER',
+            'MONGO_PASSWORD',
+        ]
+        
+        for field in required:
+            if not getattr(cls, field, None):
+                errors.append(f"{field} tanımlanmalı!")
+        
+        # MongoDB TLS validation
+        if cls.MONGO_TLS and not cls.MONGO_TLS_CA_FILE and not cls.MONGO_TLS_ALLOW_INVALID:
+            errors.append("MONGO_TLS açık ama CA sertifikası yok!")
+        
+        # Password policy validation
+        if cls.PASSWORD_MIN_LENGTH > cls.PASSWORD_MAX_LENGTH:
+            errors.append("PASSWORD_MIN_LENGTH > PASSWORD_MAX_LENGTH olamaz!")
+        
+        if errors:
+            raise ValueError(f"Configuration hataları:\n" + "\n".join(f"- {e}" for e in errors))
+        
+        return True
+
+
+class DevConfig(BaseConfig):
+    """Development configuration"""
+    DEBUG = True
+    TESTING = False
+    RELOADER=False
+    
+    # Development için daha detaylı loglar
+    LOG_LEVEL = 'DEBUG'
+    
+    # CORS - tüm origin'lere izin (sadece development)
+    CORS_ORIGINS = ['*']
+    
+    # Session - HTTP cookie (HTTPS olmadan çalışır)
+    SESSION_COOKIE_SECURE = False
+    
+    # MongoDB - TLS opsiyonel
+    MONGO_TLS_ALLOW_INVALID = True
+
+
+class LiveConfig(BaseConfig):
+    """Production configuration"""
+    DEBUG = False
+    TESTING = False
+    RELOADER=False
+
+    
+    # Production için sadece önemli loglar
+    LOG_LEVEL = 'WARNING'
+    
+    # CORS - sadece belirli origin'ler
+    # CORS_ORIGINS env'den gelecek
+    
+    # Session - Güvenli cookie
+    SESSION_COOKIE_SECURE = True
+    
+    # MongoDB - TLS zorunlu
+    MONGO_TLS_ALLOW_INVALID = False
+    
+    # Daha sıkı brute force koruması
+    USER_WARN_LOCK = 3
+    IP_WARN_LOCK = 5
+
+
+class TestConfig(BaseConfig):
+    """Testing configuration"""
+    DEBUG = True
+    TESTING = True
+    RELOADER=False
+
+    
+    # Test database
+    MONGO_DB = 'BadBoys_Test'
+    
+    # Hızlı testler için düşük timeout
+    MONGO_SERVER_SELECTION_TIMEOUT = 1000
+    MONGO_CONNECT_TIMEOUT = 2000
+    
+    # Hızlı key rotation (test için)
+    KEY_ROTATION_INTERVAL = 10
+    
+    # Hızlı brute force testi
+    USER_WARN_LOCK = 2
+    USER_TEMP_LOCK_TIME = 5
+
+
+# ============================================
+# CONFIGURATION SELECTOR
+# ============================================
+config_map = {
+    'dev': DevConfig,
+    'live': LiveConfig,
+    'test': TestConfig,
+}
+
+
+current_env = os.getenv('FLASK_ENV', 'dev')
+Config = config_map.get(current_env, DevConfig)
+
+
+ACTIVE_ENV_FILE = (
+    '.env.production' if current_env == 'production' else
+    '.env.test' if current_env == 'test' else
+    '.env.dev'
+)
+
+
+try:
+    Config.validate()
+    print(f"Configuration loaded: {current_env}")
+except ValueError as e:
+    print(f"Configuration error: {e}")
+    raise

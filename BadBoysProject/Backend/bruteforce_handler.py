@@ -1,18 +1,19 @@
 from system_utilities import system_handshake, ResultCode
 from db_connection import client
 from core import now_ts
+from config import Config
 
 
 class bruteforce_protector:
     
-    USER_WARN_LOCK = 3
-    USER_TEMP_LOCK_TIME = 15*60  # 15 dk
-    USER_HARD_LOCK = 6 
+    USER_WARN_LOCK = Config.USER_WARN_LOCK
+    USER_TEMP_LOCK_TIME = Config.USER_TEMP_LOCK_TIME
+    USER_HARD_LOCK = Config.USER_HARD_LOCK
 
-    IP_WARN_LOCK = 10
-    IP_TEMP_LOCK_TIME = 30*60    # 30 dk
-    IP_HARD_LOCK = 30
-    IP_HARD_LOCK_TIME = 24*60*60 # 24 saat
+    IP_WARN_LOCK = Config.IP_WARN_LOCK
+    IP_TEMP_LOCK_TIME = Config.IP_TEMP_LOCK_TIME
+    IP_HARD_LOCK = Config.IP_HARD_LOCK
+    IP_HARD_LOCK_TIME = Config.IP_HARD_LOCK_TIME
 
     def __init__(self, db_name='BadBoys'):
 
