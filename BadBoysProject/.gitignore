@@ -1,0 +1,8 @@
+# Environment files
+.env
+.env.dev
+.env.test
+.env.live
+
+# Certificates
+Backend/certs/

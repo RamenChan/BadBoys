@@ -55,10 +55,10 @@ class BaseConfig:
     # ============================================
     # ENCRYPTION
     # ============================================
-    MASTER_3DES_KEY = os.getenv('MASTER_3DES_KEY')
+    """MASTER_3DES_KEY = os.getenv('MASTER_3DES_KEY')
     if not MASTER_3DES_KEY:
         raise ValueError("MASTER_3DES_KEY tanımlanmalı!")
-    
+    """
     # Key Rotation
     KEY_ROTATION_INTERVAL = int(os.getenv('KEY_ROTATION_INTERVAL', 600)) 
     
@@ -76,13 +76,31 @@ class BaseConfig:
     CORS_ORIGINS = os.getenv('CORS_ORIGINS').split(',')
         
     # Session
-    SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE').lower() == 'true'
-    SESSION_COOKIE_HTTPONLY = os.getenv('SESSION_COOKIE_HTTPONLY').lower() == 'true'
-    SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE')
+    SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'false').lower() == 'true'
+    SESSION_COOKIE_HTTPONLY = os.getenv('SESSION_COOKIE_HTTPONLY', 'true').lower() == 'true'
+    SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE', 'None')
+    SESSION_TYPE = os.getenv('SESSION_TYPE', 'filesystem')
+    SESSION_FILE_DIR = os.getenv('SESSION_FILE_DIR', './flask_session')
+    PERMANENT_SESSION_LIFETIME = int(os.getenv('PERMANENT_SESSION_LIFETIME', 3600))
+
+    #CSRF
+    CSRF_ENABLED = os.getenv('CSRF_ENABLED', 'true').lower() == 'true'
+    CSRF_TIME_LIMIT = int(os.getenv('CSRF_TIME_LIMIT', 3600))
+    WTF_CSRF_TIME_LIMIT = int(os.getenv('CSRF_TIME_LIMIT', 3600)) 
+    
+    # CSRF COOKIE SETTINGS
+    CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'false').lower() == 'true'
+    CSRF_COOKIE_HTTPONLY = os.getenv('CSRF_COOKIE_HTTPONLY', 'false').lower() == 'true'
+    CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE', 'Strict')
+
+    # SOCKET.IO
+    SOCKETIO_CORS_ALLOWED_ORIGINS = os.getenv('SOCKETIO_CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+    SOCKETIO_ASYNC_MODE = os.getenv('SOCKETIO_ASYNC_MODE', 'eventlet')
+
     
     # Brute Force Protection
     USER_WARN_LOCK = int(os.getenv('USER_WARN_LOCK', 3))
-    USER_TEMP_LOCK_TIME = int(os.getenv('USER_TEMP_LOCK_TIME', 900))  # 15 dakika
+    USER_TEMP_LOCK_TIME = int(os.getenv('USER_TEMP_LOCK_TIME', 900)) 
     USER_HARD_LOCK = int(os.getenv('USER_HARD_LOCK', 6))
     
     IP_WARN_LOCK = int(os.getenv('IP_WARN_LOCK', 10))
@@ -134,7 +152,6 @@ class BaseConfig:
         # Required fields
         required = [
             'SECRET_KEY',
-            'MASTER_3DES_KEY',
             'MONGO_USER',
             'MONGO_PASSWORD',
         ]
@@ -191,7 +208,9 @@ class LiveConfig(BaseConfig):
     
     # Session - Güvenli cookie
     SESSION_COOKIE_SECURE = True
-    
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'None'    
+
     # MongoDB - TLS zorunlu
     MONGO_TLS_ALLOW_INVALID = False
     
@@ -210,6 +229,9 @@ class TestConfig(BaseConfig):
     # Test database
     MONGO_DB = 'BadBoys_Test'
     
+    # CORS - sadece belirli origin'ler
+    # CORS_ORIGINS env'den gelecek
+
     # Hızlı testler için düşük timeout
     MONGO_SERVER_SELECTION_TIMEOUT = 1000
     MONGO_CONNECT_TIMEOUT = 2000

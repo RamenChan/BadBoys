@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import ResultCode from '../constants/resultcodes';
 import '../App.css';
 import { io } from "socket.io-client";
+import { storiesAPI } from '../services/api';
 
 
 function timestampToDate(ts) {
@@ -20,13 +21,15 @@ function Dashboard() {
     const [storiesFetchedAtHtml, setStoriesFetchedAtHtml] = useState(null);
 
     useEffect(() => {
-        const socket = io("http://127.0.0.1:8000");
-
+        const socket = io("http://127.0.0.1:8000", {
+            withCredentials: true
+        });
         socket.on("new_stories", (result) => {
             if (result.code === ResultCode.SUCCESS) {
                 setStoriesApi(result.data.stories);
                 setStoriesFetchedAtApi(result.data.fetched_at);
             } else if (result.code === ResultCode.ERROR) {
+                console.error('Login hatası:', error);
                 Swal.fire({
                     title: 'Bilgilendirme',
                     html: `<p>${result.message}</p>`,
@@ -41,7 +44,9 @@ function Dashboard() {
             if (result.code === ResultCode.SUCCESS) {
                 setStoriesHtml(result.data.stories);
                 setStoriesFetchedAtHtml(result.data.fetched_at);
-            } else if (result.code === ResultCode.ERROR) {
+            }
+            else if (result.code === ResultCode.ERROR) {
+                console.error('Login hatası:', error);
                 Swal.fire({
                     title: 'Bilgilendirme',
                     html: `<p>${result.message}</p>`,
@@ -54,21 +59,20 @@ function Dashboard() {
 
         const fetchStories = async () => {
             try {
-                const resApi = await fetch("http://127.0.0.1:8000/api/stories?source=api");
-                const incomeApi = await resApi.json();
-                if (incomeApi.result.code === ResultCode.SUCCESS) {
-                    setStoriesApi(incomeApi.result.data.stories);
-                    setStoriesFetchedAtApi(incomeApi.result.data.fetched_at);
+                const { data: apiData } = await storiesAPI.getStories('api');
+                if (apiData.result.code === ResultCode.SUCCESS) {
+                    setStoriesApi(apiData.result.data.stories);
+                    setStoriesFetchedAtApi(apiData.result.data.fetched_at);
                 }
 
-                const resHtml = await fetch("http://127.0.0.1:8000/api/stories?source=html");
-                const incomeHtml = await resHtml.json();
-                if (incomeHtml.result.code === ResultCode.SUCCESS) {
-                    setStoriesHtml(incomeHtml.result.data.stories);
-                    setStoriesFetchedAtHtml(incomeHtml.result.data.fetched_at);
+                const { data: htmlData } = await storiesAPI.getStories('html');
+                if (htmlData.result.code === ResultCode.SUCCESS) {
+                    setStoriesHtml(htmlData.result.data.stories);
+                    setStoriesFetchedAtHtml(htmlData.result.data.fetched_at);
                 }
 
             } catch (error) {
+                console.error('fetchStories hatası:', error);
                 Swal.fire({
                     title: 'Hata',
                     text: 'Backend ile iletişim kurulamadı!',

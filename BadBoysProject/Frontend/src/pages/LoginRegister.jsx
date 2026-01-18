@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import ResultCode from '../constants/resultcodes';
+import { authAPI, fetchCSRFToken } from '../services/api';
 
 function LoginRegister() {
 
@@ -13,16 +14,22 @@ function LoginRegister() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const navigate = useNavigate();
 
+    useEffect(() => {
+        console.log('Component yüklendi, CSRF token alınıyor...');
+        fetchCSRFToken().catch(err => {
+            console.error('CSRF token alınamadı:', err);
+            Swal.fire({
+                title: 'Hata',
+                text: 'CSRF token alınamadı',
+                icon: 'error'
+            });
+        });
+    }, []);
 
     const user_check = async () => {
         try {
-            const res = await fetch("http://127.0.0.1:8000/user_check", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
-            });
-
-            const data = await res.json();
+            console.log('Login işlemi başlıyor...');
+            const data = await authAPI.login(username, password);
             const result = data.result;
 
             if (result.code === ResultCode.SUCCESS) {
@@ -47,33 +54,27 @@ function LoginRegister() {
             }
             else if (result.code === ResultCode.ERROR) {
                 Swal.fire({
-                    title: 'Bilgilendirme',
+                    title: 'Hata',
                     html: `<p>${result.message}</p>`,
-                    icon: 'info',
+                    icon: 'error',
                     confirmButtonText: 'Tamam'
                 });
             }
         } catch (error) {
+            console.error('Login hatası:', error);
             Swal.fire({
                 title: 'Hata',
-                text: 'Backend ile iletişim kurulamadı!',
+                text: error.response?.data?.result?.message || 'Backend ile iletişim kurulamadı!',
                 icon: 'error',
                 confirmButtonText: 'Tamam'
             });
-            //console.log(error.message || error)
         }
     };
 
-
     const user_add = async () => {
         try {
-            const res = await fetch("http://127.0.0.1:8000/user_add", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password, confirmPassword, email }),
-            });
-
-            const data = await res.json();
+            console.log('Register işlemi başlıyor...');
+            const data = await authAPI.register(username, password, confirmPassword, email);
             const result = data.result;
 
             if (result.code === ResultCode.SUCCESS) {
@@ -102,32 +103,27 @@ function LoginRegister() {
                 });
             } else if (result.code === ResultCode.ERROR) {
                 Swal.fire({
-                    title: 'Bilgilendirme',
+                    title: 'Hata',
                     html: `<p>${result.message}</p>`,
-                    icon: 'info',
+                    icon: 'error',
                     confirmButtonText: 'Tamam'
                 });
             }
         } catch (error) {
+            console.error('Register hatası:', error);
             Swal.fire({
                 title: 'Hata',
-                text: 'Backend ile iletişim kurulamadı!',
+                text: error.response?.data?.result?.message || 'Backend ile iletişim kurulamadı!',
                 icon: 'error',
                 confirmButtonText: 'Tamam'
             });
         }
     };
 
-
-
-
-
-
     useEffect(() => {
         const container = document.getElementById('container');
         const registerBtn = document.getElementById('register');
         const loginBtn = document.getElementById('login');
-
 
         if (registerBtn && loginBtn && container) {
             registerBtn.addEventListener('click', () => {

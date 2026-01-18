@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from db_connection import client
 from core import now_ts
 from system_utilities import ResultCode, system_handshake
+from config import Config
 
 
 
@@ -13,8 +14,9 @@ def get_data_by_api():
         db = client["services"]
         collection = db["api-hacker-news"]
 
-        r = requests.get(f"https://hacker-news.firebaseio.com/v0/topstories.json")
-        ids = r.json()[:20]
+        url = f"{Config.HACKER_NEWS_API_URL}/topstories.json"
+        r = requests.get(url)
+        ids = r.json()[:Config.MAX_STORIES_FETCH]
 
         stories = []
         for story_id in ids:
@@ -35,7 +37,7 @@ def get_data_by_api():
     
 def get_data_by_html():
     try:
-        url = "https://news.ycombinator.com/news"
+        url = Config.HACKER_NEWS_HTML_URL
         response = requests.get(url)
         response.raise_for_status()
 
@@ -46,7 +48,7 @@ def get_data_by_html():
 
         stories = []
 
-        for i in range(min(20, len(titles))):
+        for i in range(min(Config.MAX_STORIES_FETCH, len(titles))):
 
             title_row = titles[i]
             story_id = title_row.get("id")
