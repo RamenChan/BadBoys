@@ -142,6 +142,42 @@ class BaseConfig:
     LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', 10))
     
     # ============================================
+    # REDIS
+    # ============================================
+    REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+    REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
+    REDIS_DB = int(os.getenv('REDIS_DB', 0))
+    REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', None)
+    REDIS_SOCKET_TIMEOUT = int(os.getenv('REDIS_SOCKET_TIMEOUT', 5))
+    REDIS_SOCKET_CONNECT_TIMEOUT = int(os.getenv('REDIS_SOCKET_CONNECT_TIMEOUT', 5))
+    REDIS_MAX_CONNECTIONS = int(os.getenv('REDIS_MAX_CONNECTIONS', 50))
+    @classmethod
+    def get_redis_url(cls):
+        """Redis connection URL oluştur"""
+        if cls.REDIS_PASSWORD:
+            return f"redis://:{cls.REDIS_PASSWORD}@{cls.REDIS_HOST}:{cls.REDIS_PORT}/{cls.REDIS_DB}"
+        return f"redis://{cls.REDIS_HOST}:{cls.REDIS_PORT}/{cls.REDIS_DB}"
+    
+    # ============================================
+    # RATE LIMITING
+    # ============================================
+    RATELIMIT_ENABLED = os.getenv('RATELIMIT_ENABLED', 'true').lower() == 'true'
+    RATELIMIT_STORAGE_URL = os.getenv('RATELIMIT_STORAGE_URL')
+    
+    # Default limits
+    RATELIMIT_DEFAULT = os.getenv('RATELIMIT_DEFAULT', '200/hour;50/minute')
+    
+    # Endpoint specific limits
+    RATELIMIT_LOGIN = os.getenv('RATELIMIT_LOGIN', '5/minute;20/hour')
+    RATELIMIT_REGISTER = os.getenv('RATELIMIT_REGISTER', '3/minute;10/hour')
+    RATELIMIT_API = os.getenv('RATELIMIT_API', '100/minute;1000/hour')
+    RATELIMIT_CSRF = os.getenv('RATELIMIT_CSRF', '10/minute')
+    
+    # Headers
+    RATELIMIT_HEADERS_ENABLED = os.getenv('RATELIMIT_HEADERS_ENABLED', 'true').lower() == 'true'
+    RATELIMIT_SWALLOW_ERRORS = os.getenv('RATELIMIT_SWALLOW_ERRORS', 'true').lower() == 'true'
+
+    # ============================================
     # VALIDATION
     # ============================================
     @classmethod
@@ -168,6 +204,10 @@ class BaseConfig:
         if cls.PASSWORD_MIN_LENGTH > cls.PASSWORD_MAX_LENGTH:
             errors.append("PASSWORD_MIN_LENGTH > PASSWORD_MAX_LENGTH olamaz!")
         
+        #Redis validation
+        if cls.RATELIMIT_ENABLED and not cls.RATELIMIT_STORAGE_URL:
+            cls.RATELIMIT_STORAGE_URL = cls.get_redis_url()
+        
         if errors:
             raise ValueError(f"Configuration hataları:\n" + "\n".join(f"- {e}" for e in errors))
         
@@ -192,6 +232,12 @@ class DevConfig(BaseConfig):
     # MongoDB - TLS opsiyonel
     MONGO_TLS_ALLOW_INVALID = True
 
+    # Rate Limiting
+    RATELIMIT_DEFAULT = '500/hour;100/minute'
+    RATELIMIT_LOGIN = '10/minute;50/hour'
+    RATELIMIT_REGISTER = '5/minute;20/hour'
+
+
 
 class LiveConfig(BaseConfig):
     """Production configuration"""
@@ -214,9 +260,16 @@ class LiveConfig(BaseConfig):
     # MongoDB - TLS zorunlu
     MONGO_TLS_ALLOW_INVALID = False
     
-    # Daha sıkı brute force koruması
     USER_WARN_LOCK = 3
     IP_WARN_LOCK = 5
+
+    # Rate Limiting
+    RATELIMIT_DEFAULT = '100/hour;30/minute'
+    RATELIMIT_LOGIN = '3/minute;10/hour'
+    RATELIMIT_REGISTER = '2/minute;5/hour'
+    
+    # Production'da hataları yut
+    RATELIMIT_SWALLOW_ERRORS = True
 
 
 class TestConfig(BaseConfig):
@@ -242,6 +295,10 @@ class TestConfig(BaseConfig):
     # Hızlı brute force testi
     USER_WARN_LOCK = 2
     USER_TEMP_LOCK_TIME = 5
+
+
+    # Rate Limiting
+    RATELIMIT_DEFAULT = '10000/hour;1000/minute'
 
 
 # ============================================

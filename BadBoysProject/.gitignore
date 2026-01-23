@@ -6,3 +6,4 @@
 
 # Certificates
 Backend/certs/
+Backend/test_rate_limiting.py
