@@ -1,31 +1,50 @@
 import eventlet
 eventlet.monkey_patch()
-import secrets
 from flask import Flask, request, jsonify, make_response, session
 from flask_cors import CORS
 from flask_socketio import SocketIO
+from flask_jwt_extended import (
+    create_access_token, 
+    create_refresh_token,
+    jwt_required, 
+    get_jwt_identity,
+    get_jwt,
+    set_access_cookies,
+    set_refresh_cookies,
+    unset_jwt_cookies
+)
 from config import Config
 from user_enterance import user_exists, user_add_check
 from core import validate_payload
 from system_utilities import ResultCode, system_handshake
 from key_rotation import rotate_master_key
 from services.api import get_stories, get_data_by_api, get_data_by_html
-from werkzeug.exceptions import BadRequest
 from rate_limiter import(
     init_limiter, 
     login_limit, 
     register_limit, 
     api_limit, 
-    csrf_limit,
     exempt_from_limit
 )
 from redis_connection import RedisConnection
+from jwt_manager import init_jwt, add_token_to_blacklist
 import threading
 import time
-
+from datetime import timedelta
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = Config.SECRET_KEY
+
+
+app.config['JWT_SECRET_KEY'] = Config.JWT_SECRET_KEY
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=Config.JWT_ACCESS_TOKEN_EXPIRES)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(seconds=Config.JWT_REFRESH_TOKEN_EXPIRES)
+app.config['JWT_TOKEN_LOCATION'] = Config.JWT_TOKEN_LOCATION
+app.config['JWT_COOKIE_SECURE'] = Config.JWT_COOKIE_SECURE
+app.config['JWT_COOKIE_CSRF_PROTECT'] = Config.JWT_COOKIE_CSRF_PROTECT
+app.config['JWT_COOKIE_SAMESITE'] = Config.JWT_COOKIE_SAMESITE
+
+
 app.config['SESSION_TYPE'] = Config.SESSION_TYPE
 app.config['SESSION_COOKIE_SECURE'] = Config.SESSION_COOKIE_SECURE
 app.config['SESSION_COOKIE_HTTPONLY'] = Config.SESSION_COOKIE_HTTPONLY
@@ -36,6 +55,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = Config.PERMANENT_SESSION_LIFETIME
 CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
 
 init_limiter(app)
+init_jwt(app) 
 
 socketio = SocketIO(
     app,
@@ -43,70 +63,38 @@ socketio = SocketIO(
     async_mode=Config.SOCKETIO_ASYNC_MODE
 )
 
-@app.route("/csrf-token", methods=["GET"])
-@csrf_limit()
-def get_csrf_token():
-    """CSRF token endpoint - existing cookie varsa geri döndür"""
-    
-    existing_token = request.cookies.get("csrf_token")
-    
-    if existing_token and len(existing_token) == 64:  
-        response = make_response(jsonify({"status": "ok"}))
-        return response
-    
-    token = secrets.token_hex(32)
-    
-    response = make_response(jsonify({"status": "ok"}))
-    response.set_cookie(
-        "csrf_token",
-        token,
-        httponly=Config.CSRF_COOKIE_HTTPONLY,
-        samesite=Config.CSRF_COOKIE_SAMESITE,
-        secure=Config.CSRF_COOKIE_SECURE,
-        max_age=3600  
-    )
-    return response
-
-def validate_csrf_token():
-    csrf_cookie = request.cookies.get("csrf_token")
-    csrf_header = request.headers.get("X-CSRF-Token")
-
-    if not csrf_cookie or not csrf_header:
-        raise BadRequest("CSRF token eksik")
-
-    if csrf_cookie != csrf_header:
-        raise BadRequest("CSRF token geçersiz")
-
-    print("CSRF token geçerli")
 
 @app.route("/user_check", methods=["POST"])
 @login_limit()
 def user_check():
-    try:
-        validate_csrf_token()
-    except BadRequest as e:
-        return jsonify({"result": system_handshake(ResultCode.ERROR, str(e))}), 400
     
     data = request.get_json()
     responce = validate_payload(data)
     
-    if responce['code'] == ResultCode.SUCCESS: 
-        result = user_exists(data.get("username"), data.get("password"), ip=request.remote_addr)
-        if result['code'] == ResultCode.SUCCESS:
-            session['username'] = data.get("username")
-            session.permanent = True
-        return jsonify({"result": result})
-    else:
+    if responce['code'] != ResultCode.SUCCESS:
         return jsonify({"result": responce})
+    
+    result = user_exists(data.get("username"), data.get("password"), ip=request.remote_addr)
+    if result['code'] == ResultCode.SUCCESS:
+        username = data.get("username")
+
+        access_token = create_access_token(identity=username)
+        refresh_token = create_refresh_token(identity=username)
+
+        response = make_response(jsonify({"result": result}))
+
+        set_access_cookies(response, access_token)
+        set_refresh_cookies(response, refresh_token)
+
+        return response
+    else:
+        return jsonify({"result": result})
+
 
 
 @app.route("/user_add", methods=["POST"])
 @register_limit()
 def user_add():
-    try:
-        validate_csrf_token()
-    except BadRequest as e:
-        return jsonify({"result": system_handshake(ResultCode.ERROR, str(e))}), 400
     
     data = request.get_json()
     responce = validate_payload(data)
@@ -119,21 +107,91 @@ def user_add():
 
 
 @app.route("/logout", methods=["POST"])
+@jwt_required(optional=False, verify_type=False)
 def logout():
-    session.pop('username', None)
+    try:
+        jwt_data = get_jwt()
+        jti = jwt_data["jti"]
+        token_type = jwt_data.get("type", "access")
+        
+        if token_type == "refresh":
+            expires = app.config["JWT_REFRESH_TOKEN_EXPIRES"]
+        else:
+            expires = app.config["JWT_ACCESS_TOKEN_EXPIRES"]
+        
+        add_token_to_blacklist(jti, int(expires.total_seconds()))
+        
+        response = make_response(
+            jsonify({"result": system_handshake(ResultCode.SUCCESS, "Çıkış yapıldı")})
+        )
+        
+        unset_jwt_cookies(response)
+        
+        return response
+    except Exception as e:
+        return jsonify({
+            "result": system_handshake(ResultCode.ERROR, error_message=str(e))
+        }), 500
 
-    response = make_response(
-        jsonify({"result": system_handshake(ResultCode.SUCCESS, "Çıkış yapıldı")})
-    )
-    response.delete_cookie("csrf_token")
-    return response
+
+
+
+@app.route("/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    """Access token yenileme"""
+    try:
+        current_user = get_jwt_identity()
+        
+        new_access_token = create_access_token(identity=current_user)
+        
+        response = make_response(jsonify({
+            "result": system_handshake(ResultCode.SUCCESS, "Token yenilendi")
+        }))
+        
+        set_access_cookies(response, new_access_token)
+        
+        return response
+    except Exception as e:
+        return jsonify({
+            "result": system_handshake(ResultCode.ERROR, error_message=str(e))
+        }), 500
+
 
 @app.route("/api/stories", methods=["GET"])
+@jwt_required() 
 @api_limit()
 def api_get_stories():
+    """Stories endpoint - JWT ile korunuyor"""
+    current_user = get_jwt_identity()  
+    print(f"Stories istendi: {current_user}")
+    
     source = request.args.get("source", "api")
     result = get_stories(source)
     return jsonify({"result": result})
+
+
+@app.route("/user/me", methods=["GET"])
+@jwt_required()
+def get_current_user():
+    """Mevcut kullanıcı bilgisi"""
+    current_user = get_jwt_identity()
+    
+    from db_connection import client
+    db = client["BadBoys"]
+    user = db["users"].find_one({"username": current_user}, {"password_hash": 0, "salt": 0})
+    
+    if user:
+        user['_id'] = str(user['_id'])
+        return jsonify({
+            "result": system_handshake(ResultCode.SUCCESS, data=user)
+        })
+    else:
+        return jsonify({
+            "result": system_handshake(ResultCode.ERROR, "Kullanıcı bulunamadı")
+        }), 404
+
+
 
 
 @app.route("/", methods=["GET"])
@@ -201,4 +259,4 @@ if __name__ == "__main__":
 
 
     threading.Thread(target=start_background_tasks, daemon=True).start()
-    socketio.run(app, debug=Config.DEBUG, port=8000, host="0.0.0.0")
+    socketio.run(app, debug=Config.DEBUG, port=8000, host="0.0.0.0", use_reloader=False)

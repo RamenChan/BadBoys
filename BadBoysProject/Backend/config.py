@@ -178,6 +178,25 @@ class BaseConfig:
     RATELIMIT_SWALLOW_ERRORS = os.getenv('RATELIMIT_SWALLOW_ERRORS', 'true').lower() == 'true'
 
     # ============================================
+    # JWT CONFIGURATION
+    # ============================================
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', SECRET_KEY)
+    JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 900)) 
+    JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES', 604800)) 
+    
+    # Token location
+    JWT_TOKEN_LOCATION = ['cookies']
+    JWT_COOKIE_SECURE = os.getenv('JWT_COOKIE_SECURE', 'false').lower() == 'true'
+    JWT_COOKIE_CSRF_PROTECT = True
+    JWT_COOKIE_SAMESITE = 'Lax'
+    
+    # Blacklist için Redis
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
+
+
+
+    # ============================================
     # VALIDATION
     # ============================================
     @classmethod

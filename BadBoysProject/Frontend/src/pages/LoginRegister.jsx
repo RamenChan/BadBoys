@@ -1,125 +1,93 @@
+// src/pages/LoginRegister.jsx
 import '../App.css';
 import Swal from 'sweetalert2';
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import ResultCode from '../constants/resultcodes';
-import { authAPI, fetchCSRFToken } from '../services/api';
 
 function LoginRegister() {
-
-    const [isLogin, setIsLogin] = useState(true);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+
     const navigate = useNavigate();
+    const { login, register, isAuthenticated } = useAuth();
 
     useEffect(() => {
-        console.log('Component yüklendi, CSRF token alınıyor...');
-        fetchCSRFToken().catch(err => {
-            console.error('CSRF token alınamadı:', err);
+        if (isAuthenticated) {
+            navigate('/dashboard');
+        }
+    }, [isAuthenticated, navigate]);
+
+    const handleLogin = async () => {
+        const result = await login(username, password);
+
+        if (result.success && result.data.code === ResultCode.SUCCESS) {
             Swal.fire({
-                title: 'Hata',
-                text: 'CSRF token alınamadı',
-                icon: 'error'
-            });
-        });
-    }, []);
-
-    const user_check = async () => {
-        try {
-            console.log('Login işlemi başlıyor...');
-            const data = await authAPI.login(username, password);
-            const result = data.result;
-
-            if (result.code === ResultCode.SUCCESS) {
-                Swal.fire({
-                    title: 'Başarılı',
-                    html: `<p>${result.message}</p>`,
-                    icon: 'success',
-                    timer: 1000,
-                    timerProgressBar: true,
-                    showConfirmButton: false
-                }).then(() => {
+                title: 'Başarılı',
+                text: result.data.message,
+                icon: 'success',
+                timer: 1000,
+                timerProgressBar: true,
+                showConfirmButton: false
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
                     navigate('/dashboard');
-                });
-            }
-            else if (result.code === ResultCode.INFO) {
-                Swal.fire({
-                    title: 'Bilgilendirme',
-                    html: `<p>${result.message}</p>`,
-                    icon: 'info',
-                    confirmButtonText: 'Tamam'
-                });
-            }
-            else if (result.code === ResultCode.ERROR) {
-                Swal.fire({
-                    title: 'Hata',
-                    html: `<p>${result.message}</p>`,
-                    icon: 'error',
-                    confirmButtonText: 'Tamam'
-                });
-            }
-        } catch (error) {
-            console.error('Login hatası:', error);
-            Swal.fire({
-                title: 'Hata',
-                text: error.response?.data?.result?.message || 'Backend ile iletişim kurulamadı!',
-                icon: 'error',
-                confirmButtonText: 'Tamam'
-            });
-        }
-    };
-
-    const user_add = async () => {
-        try {
-            console.log('Register işlemi başlıyor...');
-            const data = await authAPI.register(username, password, confirmPassword, email);
-            const result = data.result;
-
-            if (result.code === ResultCode.SUCCESS) {
-                Swal.fire({
-                    title: 'Başarılı',
-                    html: `<p>${result.message}</p>`,
-                    icon: 'success',
-                    confirmButtonText: 'Tamam'
-                });
-            } else if (result.code === ResultCode.INFO) {
-                let messageContent = "";
-
-                if (Array.isArray(result.data)) {
-                    messageContent = result.data.join("<br>");
-                } else if (typeof result.data === "string") {
-                    messageContent = result.data;
-                } else {
-                    messageContent = result.message;
                 }
-
-                Swal.fire({
-                    title: 'Bilgilendirme',
-                    html: `<p>${messageContent}</p>`,
-                    icon: 'info',
-                    confirmButtonText: 'Tamam'
-                });
-            } else if (result.code === ResultCode.ERROR) {
-                Swal.fire({
-                    title: 'Hata',
-                    html: `<p>${result.message}</p>`,
-                    icon: 'error',
-                    confirmButtonText: 'Tamam'
-                });
-            }
-        } catch (error) {
-            console.error('Register hatası:', error);
+            });
+        } else if (result.data.code === ResultCode.INFO) {
+            Swal.fire({
+                title: 'Bilgilendirme',
+                text: result.data.message,
+                icon: 'info',
+                confirmButtonText: 'Tamam'
+            });
+        } else {
             Swal.fire({
                 title: 'Hata',
-                text: error.response?.data?.result?.message || 'Backend ile iletişim kurulamadı!',
+                text: result.data.message || 'Giriş başarısız!',
                 icon: 'error',
                 confirmButtonText: 'Tamam'
             });
         }
     };
 
+    const handleRegister = async () => {
+        const result = await register(username, password, confirmPassword, email);
+
+        if (result.success && result.data.code === ResultCode.SUCCESS) {
+            Swal.fire({
+                title: 'Başarılı',
+                text: result.data.message,
+                icon: 'success',
+                confirmButtonText: 'Tamam'
+            });
+        } else if (result.data.code === ResultCode.INFO) {
+            let messageContent = "";
+
+            if (Array.isArray(result.data.data)) {
+                messageContent = result.data.data.join("<br>");
+            } else {
+                messageContent = result.data.message;
+            }
+
+            Swal.fire({
+                title: 'Bilgilendirme',
+                html: `<p>${messageContent}</p>`,
+                icon: 'info',
+                confirmButtonText: 'Tamam'
+            });
+        } else {
+            Swal.fire({
+                title: 'Hata',
+                text: result.data.message || 'Kayıt başarısız!',
+                icon: 'error',
+                confirmButtonText: 'Tamam'
+            });
+        }
+    };
     useEffect(() => {
         const container = document.getElementById('container');
         const registerBtn = document.getElementById('register');
@@ -148,27 +116,55 @@ function LoginRegister() {
             <div className="form-container sign-up">
                 <form>
                     <h1>Kullanıcı Oluştur</h1>
-                    <input type="text" placeholder="Kullanıcı Adı"
-                        value={username} onChange={(e) => setUsername(e.target.value)} />
-                    <input type="email" placeholder="E-Posta"
-                        value={email} onChange={(e) => setEmail(e.target.value)} />
-                    <input type="password" placeholder="Şifre"
-                        value={password} onChange={(e) => setPassword(e.target.value)} />
-                    <input type="password" placeholder="Tekrar Şifre"
-                        value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-                    <button type="button" onClick={user_add}>Kayıt Ol</button>
+                    <input
+                        type="text"
+                        placeholder="Kullanıcı Adı"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <input
+                        type="email"
+                        placeholder="E-Posta"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <input
+                        type="password"
+                        placeholder="Şifre"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <input
+                        type="password"
+                        placeholder="Tekrar Şifre"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                    <button type="button" onClick={handleRegister}>
+                        Kayıt Ol
+                    </button>
                 </form>
             </div>
 
             <div className="form-container sign-in">
                 <form>
                     <h1>Giriş Yap</h1>
-                    <input type="text" placeholder="Kullanıcı Adı"
-                        value={username} onChange={(e) => setUsername(e.target.value)} />
-                    <input type="password" placeholder="Şifre"
-                        value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <input
+                        type="text"
+                        placeholder="Kullanıcı Adı"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <input
+                        type="password"
+                        placeholder="Şifre"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
                     <a href="#">Şifreni mi unuttun?</a>
-                    <button type="button" onClick={user_check}>Giriş Yap</button>
+                    <button type="button" onClick={handleLogin}>
+                        Giriş Yap
+                    </button>
                 </form>
             </div>
 
@@ -177,14 +173,26 @@ function LoginRegister() {
                     <div className="toggle-panel toggle-left">
                         <h1>BadBoys</h1>
                         <p>Hesabın var mı?</p>
-                        <button className="hidden" id="login" type="button"
-                            onClick={() => { setIsLogin(false); setPassword(''); setUsername(''); }}>Giriş Yap</button>
+                        <button className="hidden" id="login" type="button" onClick={() => {
+                            setPassword('');
+                            setUsername('');
+                        }}
+                        >
+                            Giriş Yap
+                        </button>
                     </div>
                     <div className="toggle-panel toggle-right">
                         <h1>BadBoys</h1>
                         <p>Henüz hesabın yok mu?</p>
-                        <button className="hidden" id="register" type="button"
-                            onClick={() => { setIsLogin(true); setPassword(''); setUsername(''); setConfirmPassword(''); setEmail('') }}>Kayıt Ol</button>
+                        <button className="hidden" id="register" type="button" onClick={() => {
+                            setPassword('');
+                            setUsername('');
+                            setConfirmPassword('');
+                            setEmail('');
+                        }}
+                        >
+                            Kayıt Ol
+                        </button>
                     </div>
                 </div>
             </div>

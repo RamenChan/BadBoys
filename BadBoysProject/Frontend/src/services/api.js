@@ -9,26 +9,65 @@ const api = axios.create({
     withCredentials: true,
 });
 
-const getCSRFTokenFromCookie = () => {
-    return document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrf_token='))
-        ?.split('=')[1];
-};
+let isRefreshing = false;
+let failedQueue = [];
 
-api.interceptors.request.use((config) => {
-    if (['post', 'put', 'delete', 'patch'].includes(config.method)) {
-        const csrfToken = getCSRFTokenFromCookie();
-        if (csrfToken) {
-            config.headers['X-CSRF-Token'] = csrfToken;
+const processQueue = (error, token = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
         }
-    }
-    return config;
-});
-
-export const fetchCSRFToken = async () => {
-    await api.get('/csrf-token');
+    });
+    failedQueue = [];
 };
+
+api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+
+            if (
+                originalRequest.url === '/refresh' ||
+                originalRequest.url === '/user_check'
+            ) {
+                return Promise.reject(error);
+            }
+
+            if (isRefreshing) {
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                }).then(() => {
+                    return api(originalRequest);
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            try {
+                await api.post('/refresh');
+
+                processQueue(null, null);
+                isRefreshing = false;
+
+                return api(originalRequest);
+            } catch (refreshError) {
+                processQueue(refreshError, null);
+                isRefreshing = false;
+
+                return Promise.reject(refreshError);
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
 
 export const authAPI = {
     login: async (username, password) => {
@@ -37,7 +76,12 @@ export const authAPI = {
     },
 
     register: async (username, password, confirmPassword, email) => {
-        const { data } = await api.post('/user_add', { username, password, confirmPassword, email });
+        const { data } = await api.post('/user_add', {
+            username,
+            password,
+            confirmPassword,
+            email
+        });
         return data;
     },
 
@@ -45,11 +89,24 @@ export const authAPI = {
         const { data } = await api.post('/logout');
         return data;
     },
+
+    getCurrentUser: async () => {
+        const { data } = await api.get('/user/me');
+        return data;
+    },
+
+    refreshToken: async () => {
+        const { data } = await api.post('/refresh');
+        return data;
+    }
 };
 
+
 export const storiesAPI = {
-    getStories: (source = 'api') =>
-        api.get(`/api/stories?source=${source}`),
+    getStories: async (source = 'api') => {
+        const { data } = await api.get(`/api/stories?source=${source}`);
+        return data;
+    }
 };
 
 export default api;
